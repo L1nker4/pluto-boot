@@ -21,6 +21,7 @@
 
     <modules>
         <module>pluto-boot-starter-web</module>
+        <module>pluto-boot-starter-cache</module>
     </modules>
 
     <build>

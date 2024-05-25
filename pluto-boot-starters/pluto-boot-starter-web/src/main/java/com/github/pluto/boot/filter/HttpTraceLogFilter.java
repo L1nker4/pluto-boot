@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
@@ -27,6 +28,7 @@ import java.util.Objects;
  * @date ： 创建于  2024/5/24 20:52
  */
 @Slf4j
+@Component
 public class HttpTraceLogFilter extends OncePerRequestFilter implements Ordered {
 
     private static final String NEED_TRACE_PATH_PREFIX = "/api/v1";

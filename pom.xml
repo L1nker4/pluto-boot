@@ -66,4 +66,11 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>snapshots</id>
+            <url>https://nexus.weiyalong.top:9443/repository/maven-snapshots</url>
+        </repository>
+    </distributionManagement>
+
 </project>
