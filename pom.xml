@@ -20,6 +20,7 @@
         <module>pluto-boot-parent</module>
         <module>pluto-boot-dependencies</module>
         <module>pluto-boot-starters</module>
+        <module>pluto-boot</module>
     </modules>
 
     <properties>
