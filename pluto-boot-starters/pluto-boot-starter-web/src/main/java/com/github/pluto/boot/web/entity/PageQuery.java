@@ -1,6 +1,5 @@
-package com.github.pluto.boot.entity;
+package com.github.pluto.boot.web.entity;
 
-import javax.management.Query;
 import java.io.Serial;
 import java.io.Serializable;
 

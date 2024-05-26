@@ -1,4 +1,4 @@
-package com.github.pluto.boot.filter;
+package com.github.pluto.boot.web.filter;
 
 import com.alibaba.fastjson2.JSON;
 import io.micrometer.core.instrument.util.IOUtils;

@@ -21,6 +21,7 @@
         <module>pluto-boot-dependencies</module>
         <module>pluto-boot-starters</module>
         <module>pluto-boot</module>
+        <module>pluto-boot-components</module>
     </modules>
 
     <properties>

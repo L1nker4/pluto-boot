@@ -1,4 +1,4 @@
-package com.github.pluto.boot.entity;
+package com.github.pluto.boot.web.entity;
 
 import com.alibaba.fastjson2.JSON;
 import org.springframework.validation.BindingResult;

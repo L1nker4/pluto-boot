@@ -22,6 +22,8 @@
         <hikaricp.version>5.1.0</hikaricp.version>
         <mybatis-flex.version>1.8.9</mybatis-flex.version>
         <flyway.version>10.13.0</flyway.version>
+        <springdoc.version>2.2.0</springdoc.version>
+        <guava.version>33.2.0-jre</guava.version>
     </properties>
 
     <dependencyManagement>

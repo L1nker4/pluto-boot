@@ -1,4 +1,4 @@
-package com.github.pluto.boot.exception;
+package com.github.pluto.boot.web.exception;
 
 /**
  * @author ：L1nker4

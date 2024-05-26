@@ -23,6 +23,7 @@
         <module>pluto-boot-starter-web</module>
         <module>pluto-boot-starter-cache</module>
         <module>pluto-boot-starter-db</module>
+        <module>pluto-boot-starter-rate-limiter</module>
     </modules>
 
     <build>
