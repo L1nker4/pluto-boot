@@ -9,15 +9,48 @@ import lombok.Data;
 @Data
 public class DictItem {
 
+    /**
+     * item id
+     */
     private Long id;
 
+    /**
+     * dict id
+     */
     private Long dictId;
 
+    /**
+     * 字典code
+     */
     private String dictCode;
 
-    private String code;
+    /**
+     * 字典项code
+     */
+    private String itemCode;
 
-    private String name;
+    /**
+     * 字典项名称
+     */
+    private String itemName;
 
+    /**
+     * 字典项层级，默认0
+     */
+    private Integer level;
+
+    /**
+     * 是否为子级
+     */
+    private Boolean isChild;
+
+    /**
+     * 父级id，可为空
+     */
+    private Long parentId;
+
+    /**
+     * 排序字段
+     */
     private Integer sort;
 }

@@ -17,21 +17,39 @@ import java.util.List;
 @Table("tb_dict_info")
 public class DictInfo {
 
+    /**
+     * 字典ID
+     */
     @Id(keyType = KeyType.Generator, value = KeyGenerators.snowFlakeId)
     private Long id;
 
+    /**
+     * 字典code
+     */
     private String dictCode;
 
+    /**
+     * 字典名称
+     */
     private String dictName;
 
+    /**
+     * 字典描述
+     */
     private String desc;
 
+    /**
+     * 字典启用状态
+     */
     private Integer status;
-
+   
     private Long createTs;
 
     private Long updateTs;
 
+    /**
+     * 关联item信息
+     */
     @RelationOneToMany(selfField = "id", targetField = "dictId")
     private List<DictItem> items;
 }
