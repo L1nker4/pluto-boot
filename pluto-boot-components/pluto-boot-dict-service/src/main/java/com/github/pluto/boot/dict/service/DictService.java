@@ -1,5 +1,6 @@
 package com.github.pluto.boot.dict.service;
 
+import com.github.pluto.boot.dict.entity.DictInfo;
 import com.github.pluto.boot.dict.entity.DictItem;
 
 public interface DictService {

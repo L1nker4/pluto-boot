@@ -1,6 +1,7 @@
 package com.github.pluto.boot.dict.service.impl;
 
 import com.github.pluto.boot.dict.entity.DictInfo;
+import com.github.pluto.boot.dict.entity.DictItem;
 import com.github.pluto.boot.dict.mapper.DictInfoMapper;
 import com.github.pluto.boot.dict.service.DictService;
 import jakarta.annotation.Resource;
@@ -26,5 +27,15 @@ public class DictServiceImpl implements DictService {
     public void initAllDictItems() {
         List<DictInfo> dictInfoList = dictInfoMapper.selectAll();
         System.out.println(dictInfoList);
+    }
+
+    @Override
+    public DictItem getDictItemByCode(String dictCode, String itemCode) {
+        return null;
+    }
+
+    @Override
+    public DictInfo getDictInfoByDictCode(String dictCode) {
+        return null;
     }
 }

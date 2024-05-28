@@ -4,6 +4,7 @@ target/
 !**/src/test/**/target/
 
 ### IntelliJ IDEA ###
+.idea
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
@@ -37,4 +38,5 @@ build/
 ### Mac OS ###
 .DS_Store
 
-!**/.flattened-pom.xml
+.flattened-pom.xml
+

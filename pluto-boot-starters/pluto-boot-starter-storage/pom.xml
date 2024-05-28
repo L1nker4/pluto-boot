@@ -5,12 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.github.pluto</groupId>
-        <artifactId>pluto-boot-project</artifactId>
+        <artifactId>pluto-boot-starters</artifactId>
         <version>${revision}</version>
-        <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>pluto-boot-dict-service</artifactId>
+    <artifactId>pluto-boot-starter-storage</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -21,17 +20,16 @@
     <dependencies>
         <dependency>
             <groupId>com.github.pluto</groupId>
-            <artifactId>pluto-boot-starter-db</artifactId>
+            <artifactId>pluto-boot-starter-web</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.pluto</groupId>
-            <artifactId>pluto-boot-starter-cache</artifactId>
-            <version>${revision}</version>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
+            <groupId>com.aliyun.oss</groupId>
+            <artifactId>aliyun-sdk-oss</artifactId>
         </dependency>
     </dependencies>
 
