@@ -22,6 +22,7 @@
         <module>pluto-boot-starters</module>
         <module>pluto-boot</module>
         <module>pluto-boot-components</module>
+        <module>pluto-boot-autoconfigure</module>
     </modules>
 
     <properties>

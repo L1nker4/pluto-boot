@@ -1,5 +1,6 @@
 package com.github.pluto.boot.dict.entity;
 
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
 /**
@@ -7,6 +8,7 @@ import lombok.Data;
  * @date ： 创建于  2024/5/26 20:59
  */
 @Data
+@Table("tb_dict_item")
 public class DictItem {
 
     /**

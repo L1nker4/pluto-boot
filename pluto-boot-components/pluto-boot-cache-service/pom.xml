@@ -5,22 +5,31 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.github.pluto</groupId>
-        <artifactId>pluto-boot-starters</artifactId>
+        <artifactId>pluto-boot-components</artifactId>
         <version>${revision}</version>
     </parent>
 
-    <artifactId>pluto-boot-starter-rate-limiter</artifactId>
+    <artifactId>pluto-boot-cache-service</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
     <dependencies>
         <dependency>
-            <groupId>com.github.pluto</groupId>
-            <artifactId>pluto-boot-rate-limiter-service</artifactId>
-            <version>${revision}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-boot-starter</artifactId>
+            <version>${redisson.version}</version>
         </dependency>
     </dependencies>
 

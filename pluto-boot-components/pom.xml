@@ -16,6 +16,11 @@
 
     <modules>
         <module>pluto-boot-dict-service</module>
+        <module>pluto-boot-cache-service</module>
+        <module>pluto-boot-rate-limiter-service</module>
+        <module>pluto-boot-storage-service</module>
+        <module>pluto-boot-web-service</module>
+        <module>pluto-boot-user-service</module>
     </modules>
 
     <properties>

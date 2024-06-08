@@ -5,22 +5,32 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.github.pluto</groupId>
-        <artifactId>pluto-boot-starters</artifactId>
+        <artifactId>pluto-boot-components</artifactId>
         <version>${revision}</version>
     </parent>
 
-    <artifactId>pluto-boot-starter-rate-limiter</artifactId>
+    <artifactId>pluto-boot-rate-limiter-service</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.github.pluto</groupId>
-            <artifactId>pluto-boot-rate-limiter-service</artifactId>
+            <artifactId>pluto-boot-starter-web</artifactId>
             <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.pluto</groupId>
+            <artifactId>pluto-boot-starter-cache</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
     </dependencies>
 
