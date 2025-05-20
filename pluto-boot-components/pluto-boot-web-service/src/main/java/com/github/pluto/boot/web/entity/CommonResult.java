@@ -3,12 +3,14 @@ package com.github.pluto.boot.web.entity;
 import com.alibaba.fastjson2.JSON;
 import org.springframework.validation.BindingResult;
 
+import java.io.Serializable;
+
 /**
  * @author     ：L1nker4
  * @date       ： 创建于  2020/1/13 20:21
  * @description：
  */
-public class CommonResult {
+public class CommonResult<T> implements Serializable {
     //操作成功
     public static final int SUCCESS = 200;
     //操作失败
@@ -29,20 +31,20 @@ public class CommonResult {
      *
      * @param data 获取的数据
      */
-    public CommonResult success(Object data) {
+    public CommonResult<T> success(T data) {
         this.code = SUCCESS;
         this.message = "操作成功";
         this.data = data;
         return this;
     }
 
-    public CommonResult success(String message) {
+    public CommonResult<T> success(String message) {
         this.code = SUCCESS;
         this.message = message;
         return this;
     }
 
-    public CommonResult data(Object data) {
+    public CommonResult<T> data(T data) {
         this.code = SUCCESS;
         this.message = "操作成功";
         this.data = data;
@@ -54,13 +56,13 @@ public class CommonResult {
     /**
      * 普通失败提示信息
      */
-    public CommonResult failed() {
+    public CommonResult<T> failed() {
         this.code = FAILED;
         this.message = "操作失败";
         return this;
     }
 
-    public CommonResult failed(String message) {
+    public CommonResult<T> failed(String message) {
         this.code = FAILED;
         this.message = message;
         return this;
@@ -71,7 +73,7 @@ public class CommonResult {
      *
      * @param message 错误信息
      */
-    public CommonResult validateFailed(String message) {
+    public CommonResult<T> validateFailed(String message) {
         this.code = VALIDATE_FAILED;
         this.message = message;
         return this;
@@ -82,7 +84,7 @@ public class CommonResult {
      *
      * @param message 错误信息
      */
-    public CommonResult unauthorized(String message) {
+    public CommonResult<T> unauthorized(String message) {
         this.code = UNAUTHORIZED;
         this.message = "暂未登录或token已经过期";
         this.data = message;
@@ -94,7 +96,7 @@ public class CommonResult {
      *
      * @param message 错误信息
      */
-    public CommonResult forbidden(String message) {
+    public CommonResult<T> forbidden(String message) {
         this.code = FORBIDDEN;
         this.message = "没有相关权限";
         this.data = message;
@@ -105,7 +107,7 @@ public class CommonResult {
      * 参数验证失败使用
      * @param result 错误信息
      */
-    public CommonResult validateFailed(BindingResult result) {
+    public CommonResult<T> validateFailed(BindingResult result) {
         validateFailed(result.getFieldError().getDefaultMessage());
         return this;
     }

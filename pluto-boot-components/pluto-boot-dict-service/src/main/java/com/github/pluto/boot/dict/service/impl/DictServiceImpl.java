@@ -8,8 +8,11 @@ import com.github.pluto.boot.dict.mapper.DictInfoMapper;
 import com.github.pluto.boot.dict.mapper.DictItemMapper;
 import com.github.pluto.boot.dict.service.DictService;
 import com.mybatisflex.core.query.QueryWrapper;
+import com.mybatisflex.spring.service.impl.ServiceImpl;
 import jakarta.annotation.Resource;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,12 +30,12 @@ public class DictServiceImpl implements DictService {
     @Resource
     private DictItemMapper dictItemMapper;
 
-    private static final String CACHE_ALL_DICT_ITEMS_KEY = "DICT_ALL_ITEMS";
+    private static final String CACHE_ALL_DICT_ITEMS_KEY = "ALL_DICT_INFO";
 
     @Override
-    @Cacheable(cacheNames = CACHE_ALL_DICT_ITEMS_KEY)
-    public List<DictInfo> initAllDictItems() {
-        return dictInfoMapper.selectAll();
+    @Cacheable(cacheNames = CACHE_ALL_DICT_ITEMS_KEY, key = "'dict:all'")
+    public List<DictInfo> getAllDicts() {
+        return dictInfoMapper.selectAllWithRelations();
     }
 
     @Override

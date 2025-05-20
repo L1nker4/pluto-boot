@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface DictService {
 
-    List<DictInfo> initAllDictItems();
+    List<DictInfo> getAllDicts();
 
     DictItem getDictItemByCode(String dictCode, String itemCode);
 
