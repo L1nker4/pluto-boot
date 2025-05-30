@@ -25,6 +25,8 @@
         <guava.version>33.2.0-jre</guava.version>
         <minio.version>8.5.10</minio.version>
         <aliyun-sdk-oss.version>3.17.4</aliyun-sdk-oss.version>
+        <commons-io.version>2.19.0</commons-io.version>
+        <sa-token.version>1.43.0</sa-token.version>
     </properties>
 
     <dependencyManagement>

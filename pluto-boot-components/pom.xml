@@ -21,6 +21,7 @@
         <module>pluto-boot-storage-service</module>
         <module>pluto-boot-web-service</module>
         <module>pluto-boot-user-service</module>
+        <module>pluto-boot-base-platform</module>
     </modules>
 
     <properties>

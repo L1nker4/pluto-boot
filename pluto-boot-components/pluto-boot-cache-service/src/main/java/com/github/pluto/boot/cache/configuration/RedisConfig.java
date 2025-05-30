@@ -16,6 +16,7 @@ import org.springframework.data.redis.core.*;
 import org.springframework.data.redis.serializer.*;
 
 import java.time.Duration;
+import java.util.Random;
 
 @Configuration
 @EnableCaching
@@ -57,7 +58,7 @@ public class RedisConfig {
     @Bean
     public CacheManager cacheManager(LettuceConnectionFactory factory) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofHours(1)) // 缓存过期时间
+                .entryTtl(Duration.ofMinutes(30 + new Random().nextInt(30)))// 缓存过期时间,随机时间避免雪崩
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 
