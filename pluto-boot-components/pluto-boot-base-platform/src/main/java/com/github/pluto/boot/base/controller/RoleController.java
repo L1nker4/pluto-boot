@@ -1,25 +1,23 @@
 package com.github.pluto.boot.base.controller;
 
 
-import com.baomidou.mybatisplus.core.toolkit.StringPool;
-import com.wuwenze.poi.ExcelKit;
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import com.github.pluto.boot.base.common.QueryRequest;
+import com.github.pluto.boot.base.entity.Role;
+import com.github.pluto.boot.base.entity.RoleMenu;
+import com.github.pluto.boot.base.exception.BaseException;
+import com.github.pluto.boot.base.logging.Log;
+import com.github.pluto.boot.base.service.RoleMenuServie;
+import com.github.pluto.boot.base.service.RoleService;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jodd.util.StringPool;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import wang.l1n.platform.common.annotation.Log;
-import wang.l1n.platform.common.controller.BaseController;
-import wang.l1n.platform.common.entity.QueryRequest;
-import wang.l1n.platform.common.exception.ForestException;
-import wang.l1n.platform.system.entity.Role;
-import wang.l1n.platform.system.entity.RoleMenu;
-import wang.l1n.platform.system.service.RoleMenuServie;
-import wang.l1n.platform.system.service.RoleService;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,7 +36,7 @@ public class RoleController extends BaseController {
     private String message;
 
     @GetMapping
-    @RequiresPermissions("role:view")
+    @SaCheckPermission("role:view")
     public Map<String, Object> roleList(QueryRequest queryRequest, Role role) {
         return getDataTable(roleService.findRoles(role, queryRequest));
     }
@@ -57,54 +55,54 @@ public class RoleController extends BaseController {
 
     @Log("新增角色")
     @PostMapping
-    @RequiresPermissions("role:add")
-    public void addRole(@Valid Role role) throws ForestException {
+    @SaCheckPermission("role:add")
+    public void addRole(@Valid Role role) throws BaseException {
         try {
             this.roleService.createRole(role);
         } catch (Exception e) {
             message = "新增角色失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 
     @Log("删除角色")
     @DeleteMapping("/{roleIds}")
-    @RequiresPermissions("role:delete")
-    public void deleteRoles(@NotBlank(message = "{required}") @PathVariable String roleIds) throws ForestException {
+    @SaCheckPermission("role:delete")
+    public void deleteRoles(@NotBlank(message = "{required}") @PathVariable String roleIds) throws BaseException {
         try {
             String[] ids = roleIds.split(StringPool.COMMA);
             this.roleService.deleteRoles(ids);
         } catch (Exception e) {
             message = "删除角色失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 
     @Log("修改角色")
     @PutMapping
-    @RequiresPermissions("role:update")
-    public void updateRole(@RequestBody Role role) throws ForestException {
+    @SaCheckPermission("role:update")
+    public void updateRole(@RequestBody Role role) throws BaseException {
         try {
             this.roleService.updateRole(role);
         } catch (Exception e) {
             message = "修改角色失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 
     @PostMapping("excel")
-    @RequiresPermissions("role:export")
-    public void export(QueryRequest queryRequest, Role role, HttpServletResponse response) throws ForestException {
+    @SaCheckPermission("role:export")
+    public void export(QueryRequest queryRequest, Role role, HttpServletResponse response) throws BaseException {
         try {
             List<Role> roles = this.roleService.findRoles(role, queryRequest).getRecords();
-            ExcelKit.$Export(Role.class, response).downXlsx(roles, false);
+//            ExcelKit.$Export(Role.class, response).downXlsx(roles, false);
         } catch (Exception e) {
             message = "导出Excel失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 }

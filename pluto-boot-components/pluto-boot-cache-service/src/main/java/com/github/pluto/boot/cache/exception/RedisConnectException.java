@@ -5,4 +5,10 @@ package com.github.pluto.boot.cache.exception;
  * @date ： 创建于  2024/5/26 16:26
  */
 public class RedisConnectException extends RuntimeException {
+
+    public RedisConnectException() {}
+
+    public RedisConnectException(String info) {
+
+    }
 }

@@ -1,63 +1,64 @@
 package com.github.pluto.boot.base.controller;
 
 
-import com.baomidou.mybatisplus.core.toolkit.StringPool;
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.stp.SaTokenInfo;
+import cn.dev33.satoken.stp.StpUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pluto.boot.base.common.BaseSystemConstant;
+import com.github.pluto.boot.base.entity.ActiveUser;
+import com.github.pluto.boot.base.entity.LoginLog;
+import com.github.pluto.boot.base.entity.SysUser;
+import com.github.pluto.boot.base.entity.UserConfig;
+import com.github.pluto.boot.base.entity.request.LoginUserRequest;
+import com.github.pluto.boot.base.exception.BaseException;
+import com.github.pluto.boot.base.mapper.LoginLogMapper;
+import com.github.pluto.boot.base.service.LoginLogService;
+import com.github.pluto.boot.base.service.SysUserManager;
+import com.github.pluto.boot.base.service.SysUserService;
+import com.github.pluto.boot.base.utils.DateUtil;
+import com.github.pluto.boot.base.utils.MD5Util;
+import com.github.pluto.boot.cache.exception.RedisConnectException;
+import com.github.pluto.boot.cache.service.RedisService;
+import com.github.pluto.boot.rate.limiter.annotation.ApiRateLimit;
+import com.github.pluto.boot.web.entity.CommonResult;
 import com.wf.captcha.ArithmeticCaptcha;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotBlank;
+import jodd.util.StringPool;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import wang.l1n.platform.common.annotation.Limit;
-import wang.l1n.platform.common.authentication.JWTToken;
-import wang.l1n.platform.common.authentication.JWTUtil;
-import wang.l1n.platform.common.entity.ActiveUser;
-import wang.l1n.platform.common.entity.CommonResult;
-import wang.l1n.platform.common.entity.ForestConstant;
-import wang.l1n.platform.common.exception.ForestException;
-import wang.l1n.platform.common.exception.RedisConnectException;
-import wang.l1n.platform.common.properties.ForestProperties;
-import wang.l1n.platform.common.service.RedisService;
-import wang.l1n.platform.common.utils.*;
-import wang.l1n.platform.system.dao.LoginLogMapper;
-import wang.l1n.platform.system.entity.LoginLog;
-import wang.l1n.platform.system.entity.User;
-import wang.l1n.platform.system.entity.UserConfig;
-import wang.l1n.platform.system.entity.request.LoginUserRequest;
-import wang.l1n.platform.system.manager.UserManager;
-import wang.l1n.platform.system.service.LoginLogService;
-import wang.l1n.platform.system.service.UserService;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Validated
 @RestController
+@Tag(name = "系统登录模块")
 public class LoginController {
 
     @Autowired
     private RedisService redisService;
     @Autowired
-    private UserManager userManager;
+    private SysUserManager userManager;
     @Autowired
-    private UserService userService;
+    private SysUserService userService;
     @Autowired
     private LoginLogService loginLogService;
     @Autowired
     private LoginLogMapper loginLogMapper;
-    @Autowired
-    private ForestProperties properties;
+
     @Autowired
     private ObjectMapper mapper;
 
     @PostMapping("/login")
-    @Limit(key = "login", period = 60, count = 20, name = "登录接口", prefix = "limit")
-    public CommonResult login(@RequestBody LoginUserRequest loginUserRequest,
+    @ApiRateLimit(key = "login", period = 60, count = 10, name = "登录接口", prefix = "limit")
+    public CommonResult<Map<String, Object>> login(@RequestBody LoginUserRequest loginUserRequest,
                               HttpServletRequest request) throws Exception {
         String username = StringUtils.lowerCase(loginUserRequest.getUsername());
         String password = MD5Util.encrypt(username, loginUserRequest.getPassword());
@@ -67,23 +68,23 @@ public class LoginController {
         String rightCode = redisService.get(uuid);
         redisService.del(uuid);
         if (StringUtils.isBlank(rightCode)){
-            throw new ForestException("验证码不存在或已过期");
+            throw new BaseException("验证码不存在或已过期");
         }
         if (StringUtils.isBlank(code) || !code.equalsIgnoreCase(rightCode)){
-            throw new ForestException("验证码错误");
+            throw new BaseException("验证码错误");
         }
 
         final String errorMessage = "用户名或密码错误";
-        User user = this.userManager.getUser(username);
+        SysUser user = this.userManager.getUser(username);
 
         if (user == null) {
-            throw new ForestException(errorMessage);
+            throw new BaseException(errorMessage);
         }
         if (!StringUtils.equals(user.getPassword(), password)) {
-            throw new ForestException(errorMessage);
+            throw new BaseException(errorMessage);
         }
-        if (User.STATUS_LOCK.equals(user.getStatus())) {
-            throw new ForestException("账号已被锁定,请联系管理员！");
+        if (SysUser.STATUS_LOCK.equals(user.getStatus())) {
+            throw new BaseException("账号已被锁定,请联系管理员！");
         }
 
         // 更新用户登录时间
@@ -93,19 +94,14 @@ public class LoginController {
         loginLog.setUsername(username);
         this.loginLogService.saveLoginLog(loginLog);
 
-        String token = ForestUtil.encryptToken(JWTUtil.sign(username, password));
-        LocalDateTime expireTime = LocalDateTime.now().plusSeconds(properties.getShiro().getJwtTimeOut());
-        String expireTimeStr = DateUtil.formatFullTime(expireTime);
-        JWTToken jwtToken = new JWTToken(token, expireTimeStr);
+        StpUtil.login(user.getUserId());
+        SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
 
-        String userId = this.saveTokenToRedis(user, jwtToken, request);
-        user.setId(userId);
-
-        Map<String, Object> userInfo = this.generateUserInfo(jwtToken, user);
-        return new CommonResult().success("认证成功").data(userInfo);
+        Map<String, Object> userInfo = this.generateUserInfo(tokenInfo, user);
+        return new CommonResult<Map<String, Object>>().success("认证成功").data(userInfo);
     }
 
-    @ApiOperation("获取验证码")
+    @Operation(summary = "获取验证码")
     @GetMapping(value = "/code")
     public ResponseEntity<Object> getCode() throws RedisConnectException {
         ArithmeticCaptcha captcha = new ArithmeticCaptcha(111, 36);
@@ -114,7 +110,7 @@ public class LoginController {
         // 获取运算的结果
         String result = captcha.text();
         String uuid = UUID.randomUUID().toString();
-        String key = ForestConstant.CODE_PREFIX + StringPool.DASH + uuid;
+        String key = BaseSystemConstant.CODE_PREFIX + StringPool.DASH + uuid;
         // 保存
         redisService.set(key, result, (long) (1000 * 60 * 2));
         // 验证码信息
@@ -126,7 +122,7 @@ public class LoginController {
     }
 
     @GetMapping("index/{username}")
-    public CommonResult index(@NotBlank(message = "{required}") @PathVariable String username) {
+    public CommonResult<Map<String, Object>> index(@NotBlank(message = "{required}") @PathVariable String username) {
         Map<String, Object> data = new HashMap<>();
         // 获取系统访问记录
         Long totalVisitCount = loginLogMapper.findTotalVisitCount();
@@ -138,18 +134,19 @@ public class LoginController {
         // 获取近期系统访问记录
         List<Map<String, Object>> lastSevenVisitCount = loginLogMapper.findLastSevenDaysVisitCount(null);
         data.put("lastSevenVisitCount", lastSevenVisitCount);
-        User param = new User();
+        SysUser param = new SysUser();
         param.setUsername(username);
         List<Map<String, Object>> lastSevenUserVisitCount = loginLogMapper.findLastSevenDaysVisitCount(param);
         data.put("lastSevenUserVisitCount", lastSevenUserVisitCount);
-        return new CommonResult().data(data);
+        return new CommonResult<Map<String, Object>>().data(data);
     }
 
-    @RequiresPermissions("user:online")
+    @SaCheckPermission("user:online")
     @GetMapping("online")
-    public CommonResult userOnline(String username) throws Exception {
+    public CommonResult<List<ActiveUser>> userOnline(String username) throws Exception {
         String now = DateUtil.formatFullTime(LocalDateTime.now());
-        Set<String> userOnlineStringSet = redisService.zrangeByScore(ForestConstant.ACTIVE_USERS_ZSET_PREFIX, now, "+inf");
+        Double nowScore = Double.parseDouble(now);
+        Set<String> userOnlineStringSet = redisService.zrangeByScore(BaseSystemConstant.ACTIVE_USERS_ZSET_PREFIX, nowScore, Double.POSITIVE_INFINITY);
         List<ActiveUser> activeUsers = new ArrayList<>();
         for (String userOnlineString : userOnlineStringSet) {
             ActiveUser activeUser = mapper.readValue(userOnlineString, ActiveUser.class);
@@ -162,14 +159,15 @@ public class LoginController {
                 activeUsers.add(activeUser);
             }
         }
-        return new CommonResult().data(activeUsers);
+        return new CommonResult<List<ActiveUser>>().data(activeUsers);
     }
 
     @DeleteMapping("kickout/{id}")
-    @RequiresPermissions("user:kickout")
+    @SaCheckPermission("user:kickout")
     public void kickout(@NotBlank(message = "{required}") @PathVariable String id) throws Exception {
         String now = DateUtil.formatFullTime(LocalDateTime.now());
-        Set<String> userOnlineStringSet = redisService.zrangeByScore(ForestConstant.ACTIVE_USERS_ZSET_PREFIX, now, "+inf");
+        Double nowScore = Double.parseDouble(now);
+        Set<String> userOnlineStringSet = redisService.zrangeByScore(BaseSystemConstant.ACTIVE_USERS_ZSET_PREFIX, nowScore, Double.POSITIVE_INFINITY);
         ActiveUser kickoutUser = null;
         String kickoutUserString = "";
         for (String userOnlineString : userOnlineStringSet) {
@@ -181,9 +179,9 @@ public class LoginController {
         }
         if (kickoutUser != null && StringUtils.isNotBlank(kickoutUserString)) {
             // 删除 zset中的记录
-            redisService.zrem(ForestConstant.ACTIVE_USERS_ZSET_PREFIX, kickoutUserString);
+            redisService.zrem(BaseSystemConstant.ACTIVE_USERS_ZSET_PREFIX, kickoutUserString);
             // 删除对应的 token缓存
-            redisService.del(ForestConstant.TOKEN_CACHE_PREFIX + kickoutUser.getToken() + "." + kickoutUser.getIp());
+            redisService.del(BaseSystemConstant.TOKEN_CACHE_PREFIX + kickoutUser.getToken() + "." + kickoutUser.getIp());
         }
         userManager.deleteUserRedisCache(id);
     }
@@ -194,28 +192,10 @@ public class LoginController {
     }
 
     @PostMapping("regist")
-    public void regist(
+    public void register(
             @NotBlank(message = "{required}") String username,
             @NotBlank(message = "{required}") String password) throws Exception {
         this.userService.regist(username, password);
-    }
-
-    private String saveTokenToRedis(User user, JWTToken token, HttpServletRequest request) throws Exception {
-        String ip = IPUtil.getIpAddr(request);
-
-        // 构建在线用户
-        ActiveUser activeUser = new ActiveUser();
-        activeUser.setUsername(user.getUsername());
-        activeUser.setIp(ip);
-        activeUser.setToken(token.getToken());
-        activeUser.setLoginAddress(AddressUtil.getCityInfo(ip));
-
-        // zset 存储登录用户，score 为过期时间戳
-        this.redisService.zadd(ForestConstant.ACTIVE_USERS_ZSET_PREFIX, Double.valueOf(token.getExipreAt()), mapper.writeValueAsString(activeUser));
-        // redis 中存储这个加密 token，key = 前缀 + 加密 token + .ip
-        this.redisService.set(ForestConstant.TOKEN_CACHE_PREFIX + token.getToken() + StringPool.DOT + ip, token.getToken(), properties.getShiro().getJwtTimeOut() * 1000);
-
-        return activeUser.getId();
     }
 
     /**
@@ -230,11 +210,11 @@ public class LoginController {
      * @param user  用户信息
      * @return UserInfo
      */
-    private Map<String, Object> generateUserInfo(JWTToken token, User user) {
+    private Map<String, Object> generateUserInfo(SaTokenInfo token, SysUser user) {
         String username = user.getUsername();
         Map<String, Object> userInfo = new HashMap<>();
-        userInfo.put("token", token.getToken());
-        userInfo.put("exipreTime", token.getExipreAt());
+        userInfo.put("token", token.getTokenValue());
+        userInfo.put("exipreTime", System.currentTimeMillis() / 1000 + token.getTokenTimeout());
 
         Set<String> roles = this.userManager.getUserRoles(username);
         userInfo.put("roles", roles);

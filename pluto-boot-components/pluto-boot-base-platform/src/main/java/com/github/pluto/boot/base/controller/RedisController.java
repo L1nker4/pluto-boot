@@ -1,6 +1,7 @@
 package com.github.pluto.boot.base.controller;
 
 
+import com.github.pluto.boot.cache.entity.RedisInfo;
 import com.github.pluto.boot.cache.service.RedisService;
 import com.github.pluto.boot.web.entity.CommonResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,18 +20,18 @@ public class RedisController {
     private RedisService redisService;
 
     @GetMapping("info")
-    public CommonResult getRedisInfo() throws Exception {
+    public CommonResult<List<RedisInfo>> getRedisInfo() {
         List<RedisInfo> infoList = this.redisService.getRedisInfo();
-        return new CommonResult().data(infoList);
+        return new CommonResult<List<RedisInfo>>().data(infoList);
     }
 
     @GetMapping("keysSize")
-    public Map<String, Object> getKeysSize() throws Exception {
+    public Map<String, Object> getKeysSize() {
         return redisService.getKeysSize();
     }
 
     @GetMapping("memoryInfo")
-    public Map<String, Object> getMemoryInfo() throws Exception {
+    public Map<String, Object> getMemoryInfo() {
         return redisService.getMemoryInfo();
     }
 }

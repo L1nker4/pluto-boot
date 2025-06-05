@@ -1,33 +1,30 @@
 package com.github.pluto.boot.base.controller;
 
 
-import com.baomidou.mybatisplus.core.toolkit.StringPool;
-import com.wuwenze.poi.ExcelKit;
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import com.github.pluto.boot.base.common.QueryRequest;
+import com.github.pluto.boot.base.entity.Role;
+import com.github.pluto.boot.base.entity.SysUser;
+import com.github.pluto.boot.base.entity.UserConfig;
+import com.github.pluto.boot.base.entity.request.UpdateAvatorRequest;
+import com.github.pluto.boot.base.exception.BaseException;
+import com.github.pluto.boot.base.logging.Log;
+import com.github.pluto.boot.base.service.RoleService;
+import com.github.pluto.boot.base.service.SysUserService;
+import com.github.pluto.boot.base.service.UserConfigService;
+import com.github.pluto.boot.base.utils.MD5Util;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jodd.util.StringPool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import wang.l1n.platform.common.annotation.Log;
-import wang.l1n.platform.common.controller.BaseController;
-import wang.l1n.platform.common.entity.QueryRequest;
-import wang.l1n.platform.common.exception.ForestException;
-import wang.l1n.platform.common.utils.MD5Util;
-import wang.l1n.platform.system.entity.Role;
-import wang.l1n.platform.system.entity.User;
-import wang.l1n.platform.system.entity.UserConfig;
-import wang.l1n.platform.system.entity.request.UpdateAvatorRequest;
-import wang.l1n.platform.system.service.RoleService;
-import wang.l1n.platform.system.service.UserConfigService;
-import wang.l1n.platform.system.service.UserService;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Validated
@@ -38,7 +35,7 @@ public class UserController extends BaseController {
     private String message;
 
     @Autowired
-    private UserService userService;
+    private SysUserService userService;
     @Autowired
     private UserConfigService userConfigService;
     @Autowired
@@ -50,92 +47,95 @@ public class UserController extends BaseController {
     }
 
     @GetMapping("/{username}")
-    public User detail(@NotBlank(message = "{required}") @PathVariable String username) {
-        User user = this.userService.findByName(username);
+    public SysUser detail(@NotBlank(message = "{required}") @PathVariable String username) {
+        SysUser user = this.userService.findByName(username);
         //修复用户修改自己的个人信息第二次提示roleId不能为空
         List<Role> roles = roleService.findUserRole(username);
-        List<Long> roleIds = roles.stream().map(role -> role.getRoleId()).collect(Collectors.toList());
-        String roleIdStr = StringUtils.join(roleIds.toArray(new Long[roleIds.size()]), ",");
+        String roleIdStr = StringUtils
+                .join(roles
+                        .stream()
+                        .map(Role::getRoleId)
+                        .toArray(Long[]::new), ",");
         user.setRoleId(roleIdStr);
         return user;
     }
 
     @GetMapping
-    @RequiresPermissions("user:view")
-    public Map<String, Object> userList(QueryRequest queryRequest, User user) {
+    @SaCheckPermission("user:view")
+    public Map<String, Object> userList(QueryRequest queryRequest, SysUser user) {
         return getDataTable(userService.findUserDetail(user, queryRequest));
     }
 
     @Log("新增用户")
     @PostMapping
-    @RequiresPermissions("user:add")
-    public void addUser(@Valid User user) throws ForestException {
+    @SaCheckPermission("user:add")
+    public void addUser(@Valid SysUser user) throws BaseException {
         try {
             this.userService.createUser(user);
         } catch (Exception e) {
             message = "新增用户失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 
     @Log("修改用户")
     @PutMapping
-    @RequiresPermissions("user:update")
-    public void updateUser(@Valid User user) throws ForestException {
+    @SaCheckPermission("user:update")
+    public void updateUser(@Valid SysUser user) throws BaseException {
         try {
             this.userService.updateUser(user);
         } catch (Exception e) {
             message = "修改用户失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 
     @Log("删除用户")
     @DeleteMapping("/{userIds}")
-    @RequiresPermissions("user:delete")
-    public void deleteUsers(@NotBlank(message = "{required}") @PathVariable String userIds) throws ForestException {
+    @SaCheckPermission("user:delete")
+    public void deleteUsers(@NotBlank(message = "{required}") @PathVariable String userIds) throws BaseException {
         try {
             String[] ids = userIds.split(StringPool.COMMA);
             this.userService.deleteUsers(ids);
         } catch (Exception e) {
             message = "删除用户失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 
     @PutMapping("profile")
-    public void updateProfile(@RequestBody @Valid User user) throws ForestException {
+    public void updateProfile(@RequestBody @Valid SysUser user) throws BaseException {
         try {
             this.userService.updateProfile(user);
         } catch (Exception e) {
             message = "修改个人信息失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 
     @PutMapping("avatar")
-    public void updateAvatar(@RequestBody @Valid UpdateAvatorRequest request) throws ForestException {
+    public void updateAvatar(@RequestBody @Valid UpdateAvatorRequest request) throws BaseException {
         try {
             this.userService.updateAvatar(request.getUsername(), request.getAvatar());
         } catch (Exception e) {
             message = "修改头像失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 
     @PutMapping("userconfig")
-    public void updateUserConfig(@Valid UserConfig userConfig) throws ForestException {
+    public void updateUserConfig(@Valid UserConfig userConfig) throws BaseException {
         try {
             this.userConfigService.update(userConfig);
         } catch (Exception e) {
             message = "修改个性化配置失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 
@@ -144,7 +144,7 @@ public class UserController extends BaseController {
             @NotBlank(message = "{required}") String username,
             @NotBlank(message = "{required}") String password) {
         String encryptPassword = MD5Util.encrypt(username, password);
-        User user = userService.findByName(username);
+         SysUser user = userService.findByName(username);
         if (user != null) {
             return StringUtils.equals(user.getPassword(), encryptPassword);
         } else {
@@ -155,39 +155,39 @@ public class UserController extends BaseController {
     @PutMapping("password")
     public void updatePassword(
             @NotBlank(message = "{required}") String username,
-            @NotBlank(message = "{required}") String password) throws ForestException {
+            @NotBlank(message = "{required}") String password) throws BaseException {
         try {
             userService.updatePassword(username, password);
         } catch (Exception e) {
             message = "修改密码失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 
     @PutMapping("password/reset")
-    @RequiresPermissions("user:reset")
-    public void resetPassword(@NotBlank(message = "{required}") String usernames) throws ForestException {
+    @SaCheckPermission("user:reset")
+    public void resetPassword(@NotBlank(message = "{required}") String usernames) throws BaseException {
         try {
             String[] usernameArr = usernames.split(StringPool.COMMA);
             this.userService.resetPassword(usernameArr);
         } catch (Exception e) {
             message = "重置用户密码失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 
     @PostMapping("excel")
-    @RequiresPermissions("user:export")
-    public void export(QueryRequest queryRequest, User user, HttpServletResponse response) throws ForestException {
+    @SaCheckPermission("user:export")
+    public void export(QueryRequest queryRequest, SysUser user, HttpServletResponse response) throws BaseException {
         try {
-            List<User> users = this.userService.findUserDetail(user, queryRequest).getRecords();
-            ExcelKit.$Export(User.class, response).downXlsx(users, false);
+            List<SysUser> users = this.userService.findUserDetail(user, queryRequest).getRecords();
+//            ExcelKit.$Export(User.class, response).downXlsx(users, false);
         } catch (Exception e) {
             message = "导出Excel失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 }

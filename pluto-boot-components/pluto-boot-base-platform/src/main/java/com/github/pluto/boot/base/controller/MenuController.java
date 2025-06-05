@@ -1,24 +1,22 @@
 package com.github.pluto.boot.base.controller;
 
 
-import com.baomidou.mybatisplus.core.toolkit.StringPool;
-import com.wuwenze.poi.ExcelKit;
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import com.github.pluto.boot.base.common.router.VueRouter;
+import com.github.pluto.boot.base.entity.Menu;
+import com.github.pluto.boot.base.exception.BaseException;
+import com.github.pluto.boot.base.logging.Log;
+import com.github.pluto.boot.base.service.MenuService;
+import com.github.pluto.boot.base.service.SysUserManager;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jodd.util.StringPool;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import wang.l1n.platform.common.annotation.Log;
-import wang.l1n.platform.common.controller.BaseController;
-import wang.l1n.platform.common.entity.router.VueRouter;
-import wang.l1n.platform.common.exception.ForestException;
-import wang.l1n.platform.system.entity.Menu;
-import wang.l1n.platform.system.manager.UserManager;
-import wang.l1n.platform.system.service.MenuService;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +30,7 @@ public class MenuController extends BaseController {
     private String message;
 
     @Autowired
-    private UserManager userManager;
+    private SysUserManager userManager;
     @Autowired
     private MenuService menuService;
 
@@ -42,61 +40,61 @@ public class MenuController extends BaseController {
     }
 
     @GetMapping
-    @RequiresPermissions("menu:view")
+    @SaCheckPermission("menu:view")
     public Map<String, Object> menuList(Menu menu) {
         return this.menuService.findMenus(menu);
     }
 
     @Log("新增菜单/按钮")
     @PostMapping
-    @RequiresPermissions("menu:add")
-    public void addMenu(@Valid @RequestBody Menu menu) throws ForestException {
+    @SaCheckPermission("menu:add")
+    public void addMenu(@Valid @RequestBody Menu menu) throws BaseException {
         try {
             this.menuService.createMenu(menu);
         } catch (Exception e) {
             message = "新增菜单/按钮失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 
     @Log("删除菜单/按钮")
     @DeleteMapping("/{menuIds}")
-    @RequiresPermissions("menu:delete")
-    public void deleteMenus(@NotBlank(message = "{required}") @PathVariable String menuIds) throws ForestException {
+    @SaCheckPermission("menu:delete")
+    public void deleteMenus(@NotBlank(message = "{required}") @PathVariable String menuIds) throws BaseException {
         try {
             String[] ids = menuIds.split(StringPool.COMMA);
             this.menuService.deleteMeuns(ids);
         } catch (Exception e) {
             message = "删除菜单/按钮失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 
     @Log("修改菜单/按钮")
     @PutMapping
-    @RequiresPermissions("menu:update")
-    public void updateMenu(@Valid @RequestBody Menu menu) throws ForestException {
+    @SaCheckPermission("menu:update")
+    public void updateMenu(@Valid @RequestBody Menu menu) throws BaseException {
         try {
             this.menuService.updateMenu(menu);
         } catch (Exception e) {
             message = "修改菜单/按钮失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 
     @PostMapping("excel")
-    @RequiresPermissions("menu:export")
-    public void export(Menu menu, HttpServletResponse response) throws ForestException {
+    @SaCheckPermission("menu:export")
+    public void export(Menu menu, HttpServletResponse response) throws BaseException {
         try {
             List<Menu> menus = this.menuService.findMenuList(menu);
-            ExcelKit.$Export(Menu.class, response).downXlsx(menus, false);
+//            ExcelKit.$Export(Menu.class, response).downXlsx(menus, false);
         } catch (Exception e) {
             message = "导出Excel失败";
             log.error(message, e);
-            throw new ForestException(message);
+            throw new BaseException(message);
         }
     }
 }

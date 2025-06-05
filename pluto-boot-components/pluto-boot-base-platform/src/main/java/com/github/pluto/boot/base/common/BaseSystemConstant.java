@@ -34,5 +34,7 @@ public class BaseSystemConstant {
     //验证码缓存前缀
     public static final String CODE_PREFIX = "auth_key";
 
+    public static final String SYS_USER = "sys-user";
+
 
 }

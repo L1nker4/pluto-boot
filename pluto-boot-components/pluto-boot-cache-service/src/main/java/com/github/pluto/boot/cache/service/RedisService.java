@@ -1,6 +1,11 @@
 package com.github.pluto.boot.cache.service;
 
 
+import com.github.pluto.boot.cache.entity.RedisInfo;
+import com.github.pluto.boot.cache.exception.RedisConnectException;
+
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -113,4 +118,25 @@ public interface RedisService {
      * @param lockName 锁名称
      */
     void releaseDistributedLock(String lockName);
+
+    /**
+     * 获取 redis 的详细信息
+     *
+     * @return List
+     */
+    List<RedisInfo> getRedisInfo() throws RedisConnectException;
+
+    /**
+     * 获取 redis key 数量
+     *
+     * @return Map
+     */
+    Map<String, Object> getKeysSize() throws RedisConnectException;
+
+    /**
+     * 获取 redis 内存信息
+     *
+     * @return Map
+     */
+    Map<String, Object> getMemoryInfo() throws RedisConnectException;
 }
