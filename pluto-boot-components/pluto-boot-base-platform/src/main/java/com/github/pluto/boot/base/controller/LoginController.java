@@ -94,7 +94,7 @@ public class LoginController {
         loginLog.setUsername(username);
         this.loginLogService.saveLoginLog(loginLog);
 
-        StpUtil.login(user.getUserId());
+        StpUtil.login(user.getUserId(), BaseSystemConstant.SYS_USER);
         SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
 
         Map<String, Object> userInfo = this.generateUserInfo(tokenInfo, user);
@@ -114,7 +114,7 @@ public class LoginController {
         // 保存
         redisService.set(key, result, (long) (1000 * 60 * 2));
         // 验证码信息
-        Map<String, Object> imgResult = new HashMap<String, Object>(2) {{
+        Map<String, Object> imgResult = new HashMap<>(2) {{
             put("img", captcha.toBase64());
             put("uuid", key);
         }};
@@ -165,25 +165,7 @@ public class LoginController {
     @DeleteMapping("kickout/{id}")
     @SaCheckPermission("user:kickout")
     public void kickout(@NotBlank(message = "{required}") @PathVariable String id) throws Exception {
-        String now = DateUtil.formatFullTime(LocalDateTime.now());
-        Double nowScore = Double.parseDouble(now);
-        Set<String> userOnlineStringSet = redisService.zrangeByScore(BaseSystemConstant.ACTIVE_USERS_ZSET_PREFIX, nowScore, Double.POSITIVE_INFINITY);
-        ActiveUser kickoutUser = null;
-        String kickoutUserString = "";
-        for (String userOnlineString : userOnlineStringSet) {
-            ActiveUser activeUser = mapper.readValue(userOnlineString, ActiveUser.class);
-            if (StringUtils.equals(activeUser.getId(), id)) {
-                kickoutUser = activeUser;
-                kickoutUserString = userOnlineString;
-            }
-        }
-        if (kickoutUser != null && StringUtils.isNotBlank(kickoutUserString)) {
-            // 删除 zset中的记录
-            redisService.zrem(BaseSystemConstant.ACTIVE_USERS_ZSET_PREFIX, kickoutUserString);
-            // 删除对应的 token缓存
-            redisService.del(BaseSystemConstant.TOKEN_CACHE_PREFIX + kickoutUser.getToken() + "." + kickoutUser.getIp());
-        }
-        userManager.deleteUserRedisCache(id);
+        StpUtil.logout(id, BaseSystemConstant.SYS_USER);
     }
 
     @GetMapping("logout/{id}")

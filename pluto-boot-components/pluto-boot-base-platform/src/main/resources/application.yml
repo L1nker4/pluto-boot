@@ -1,0 +1,3 @@
+sa-token:
+  token-style: random-64
+  token-prefix: Bearer
