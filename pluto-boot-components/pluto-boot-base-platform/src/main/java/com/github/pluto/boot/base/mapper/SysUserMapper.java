@@ -3,8 +3,10 @@ package com.github.pluto.boot.base.mapper;
 import com.github.pluto.boot.base.entity.SysUser;
 import com.mybatisflex.core.BaseMapper;
 import com.mybatisflex.core.paginate.Page;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+@Mapper
 public interface SysUserMapper extends BaseMapper<SysUser> {
 
     Page<SysUser> findUserDetail(Page page, @Param("user") SysUser sysUser);

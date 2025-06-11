@@ -4,12 +4,12 @@ package com.github.pluto.boot.base.service.impl;
 import com.github.pluto.boot.base.entity.UserRole;
 import com.github.pluto.boot.base.mapper.UserRoleMapper;
 import com.github.pluto.boot.base.service.UserRoleService;
+import com.google.common.collect.Lists;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,13 +22,13 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteUserRolesByRoleId(String[] roleIds) {
-		Arrays.stream(roleIds).forEach(id -> mapper.deleteByRoleId(Long.valueOf(id)));
+		mapper.deleteByCondition(USER_ROLE.ROLE_ID.in(Lists.newArrayList(roleIds)));
 	}
 
 	@Override
     @Transactional(rollbackFor = Exception.class)
 	public void deleteUserRolesByUserId(String[] userIds) {
-		Arrays.stream(userIds).forEach(id -> mapper.deleteByUserId(Long.valueOf(id)));
+		mapper.deleteByCondition(USER_ROLE.USER_ID.in(Lists.newArrayList(userIds)));
 	}
 
 	@Override

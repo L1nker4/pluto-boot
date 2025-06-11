@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="wang.l1n.platform.system.dao.RoleMapper">
+    <resultMap id="roleMap" type="wang.l1n.platform.system.entity.Role">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="role_id" jdbcType="DECIMAL" property="roleId"/>
+        <result column="role_name" jdbcType="VARCHAR" property="roleName"/>
+        <result column="remark" jdbcType="VARCHAR" property="remark"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <select id="findUserRole" resultMap="roleMap">
+        select r.*
+        from sys_role r
+                 left join sys_user_role ur on (r.role_id = ur.role_id)
+                 left join sys_user u on (u.user_id = ur.user_id)
+        where u.username = #{userName}
+    </select>
+
+</mapper>

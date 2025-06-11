@@ -4,10 +4,12 @@ package com.github.pluto.boot.base.mapper;
 import com.github.pluto.boot.base.entity.LoginLog;
 import com.github.pluto.boot.base.entity.SysUser;
 import com.mybatisflex.core.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 import java.util.Map;
 
+@Mapper
 public interface LoginLogMapper extends BaseMapper<LoginLog> {
 
     /**

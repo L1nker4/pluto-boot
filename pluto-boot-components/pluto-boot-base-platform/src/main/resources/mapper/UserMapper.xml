@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="wang.l1n.platform.system.dao.UserMapper">
+    <resultMap id="BaseResultMap" type="wang.l1n.platform.system.entity.User">
+        <id column="user_id" jdbcType="DECIMAL" property="userId"/>
+        <result column="username" jdbcType="VARCHAR" property="username"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+        <result column="dept_id" jdbcType="DECIMAL" property="deptId"/>
+        <result column="email" jdbcType="VARCHAR" property="email"/>
+        <result column="mobile" jdbcType="VARCHAR" property="mobile"/>
+        <result column="status" jdbcType="CHAR" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="last_login_time" jdbcType="TIMESTAMP" property="lastLoginTime"/>
+        <result column="sex" jdbcType="CHAR" property="sex"/>
+        <result column="avatar" jdbcType="VARCHAR" property="avatar"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+    </resultMap>
+
+    <select id="findUserDetail" resultType="wang.l1n.platform.system.entity.User" parameterType="wang.l1n.platform.system.entity.User">
+        SELECT
+        u.user_id userId,
+        u.username,
+        u.password,
+        u.email,
+        u.mobile,
+        u.status,
+        u.create_time createTime,
+        u.sex,
+        d.dept_id deptId,
+        d.dept_name deptName,
+        u.avatar,
+        u.description,
+        u.last_login_time lastLoginTime,
+        GROUP_CONCAT(r.role_id) roleId,
+        GROUP_CONCAT(r.role_name) roleName
+        FROM
+        sys_user u
+        LEFT JOIN sys_dept d ON (u.dept_id = d.dept_id)
+        LEFT JOIN sys_user_role ur ON (u.user_id = ur.user_id)
+        LEFT JOIN sys_role r ON r.role_id = ur.role_id
+        WHERE 1 = 1
+        <if test="user.username != null and user.username != ''">
+            AND u.username = #{user.username}
+        </if>
+        <if test="user.deptId != null and user.deptId != ''">
+            AND d.dept_id = #{user.deptId}
+        </if>
+        <if test="user.createTimeFrom != null and user.createTimeFrom !=''">
+            And u.create_time &gt; #{user.createTimeFrom}
+        </if>
+        <if test="user.createTimeTo!= null and user.createTimeTo !=''">
+            And u.create_time &lt; #{user.createTimeTo}
+        </if>
+        <if test="user.sex != null and user.sex != ''">
+            AND u.sex = #{user.sex}
+        </if>
+        <if test="user.status != null and user.status != ''">
+            AND u.status = #{user.status}
+        </if>
+        group by u.username,
+        u.user_id,
+        u.password,
+        u.email,
+        u.mobile,
+        u.status,
+        u.create_time,
+        u.sex,
+        d.dept_id,
+        d.dept_name,
+        u.avatar,
+        u.description,
+        u.last_login_time
+
+    </select>
+
+    <select id="findDetail" resultType="wang.l1n.platform.system.entity.User" parameterType="string">
+        SELECT
+            u.user_id userId,
+            u.username,
+            u.password,
+            u.email,
+            u.mobile,
+            u.status,
+            u.create_time createTime,
+            u.sex,
+            d.dept_id deptId,
+            d.dept_name deptName,
+            u.avatar,
+            u.description,
+            u.last_login_time lastLoginTime,
+            GROUP_CONCAT(r.role_id) roleId,
+            GROUP_CONCAT(r.role_name) roleName
+        FROM
+            sys_user u
+                LEFT JOIN sys_dept d ON (u.dept_id = d.dept_id)
+                LEFT JOIN sys_user_role ur ON (u.user_id = ur.user_id)
+                LEFT JOIN sys_role r ON r.role_id = ur.role_id
+        WHERE  u.username = #{username}
+        group by u.username,
+                 u.user_id,
+                 u.password,
+                 u.email,
+                 u.mobile,
+                 u.status,
+                 u.create_time,
+                 u.sex,
+                 d.dept_id,
+                 d.dept_name,
+                 u.avatar,
+                 u.description,
+                 u.last_login_time
+    </select>
+</mapper>

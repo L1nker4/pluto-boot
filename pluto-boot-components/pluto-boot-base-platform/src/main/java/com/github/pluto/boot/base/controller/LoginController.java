@@ -94,7 +94,7 @@ public class LoginController {
         loginLog.setUsername(username);
         this.loginLogService.saveLoginLog(loginLog);
 
-        StpUtil.login(user.getUserId(), BaseSystemConstant.SYS_USER);
+        StpUtil.login(user.getUsername(), BaseSystemConstant.SYS_USER);
         SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
 
         Map<String, Object> userInfo = this.generateUserInfo(tokenInfo, user);
@@ -165,7 +165,11 @@ public class LoginController {
     @DeleteMapping("kickout/{id}")
     @SaCheckPermission("user:kickout")
     public void kickout(@NotBlank(message = "{required}") @PathVariable String id) throws Exception {
-        StpUtil.logout(id, BaseSystemConstant.SYS_USER);
+        SysUser sysUser = userService.getById(id);
+        if (sysUser == null) {
+            throw new BaseException("用户不存在");
+        }
+        StpUtil.logout(sysUser.getUsername(), BaseSystemConstant.SYS_USER);
     }
 
     @GetMapping("logout/{id}")
