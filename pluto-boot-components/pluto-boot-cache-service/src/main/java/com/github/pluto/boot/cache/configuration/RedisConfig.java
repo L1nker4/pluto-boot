@@ -1,20 +1,22 @@
 package com.github.pluto.boot.cache.configuration;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.RedisPassword;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.core.*;
-import org.springframework.data.redis.serializer.*;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.io.Serializable;
 import java.time.Duration;
 import java.util.Random;
 
@@ -37,7 +39,6 @@ public class RedisConfig {
     }
 
     @Bean
-    @ConditionalOnMissingBean
     public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory factory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(factory);
@@ -53,6 +54,24 @@ public class RedisConfig {
 
         template.afterPropertiesSet();
         return template;
+    }
+
+    @Bean(name = "limitRedisTemplate")
+    public RedisTemplate<String, Serializable> limitRedisTemplate(LettuceConnectionFactory factory) {
+        RedisTemplate<String, Serializable> limitRedisTemplate = new RedisTemplate<>();
+        limitRedisTemplate.setConnectionFactory(factory);
+
+        // 使用 JSON 作为值的序列化方式
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer();
+        StringRedisSerializer stringSerializer = new StringRedisSerializer();
+
+        limitRedisTemplate.setKeySerializer(stringSerializer);
+        limitRedisTemplate.setValueSerializer(jsonSerializer);
+        limitRedisTemplate.setHashKeySerializer(stringSerializer);
+        limitRedisTemplate.setHashValueSerializer(jsonSerializer);
+
+        limitRedisTemplate.afterPropertiesSet();
+        return limitRedisTemplate;
     }
 
     @Bean

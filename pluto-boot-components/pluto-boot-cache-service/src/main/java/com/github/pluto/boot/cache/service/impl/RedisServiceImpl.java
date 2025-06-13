@@ -10,6 +10,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
  * @author ：L1nker4
  * @date ： 创建于  2024/5/26 16:27
  */
+@Service("redisService")
 public class RedisServiceImpl implements RedisService {
 
     private static final String separator = System.lineSeparator();

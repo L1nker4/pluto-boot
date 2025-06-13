@@ -6,6 +6,7 @@ import com.github.pluto.boot.rate.limiter.enums.LimitType;
 import com.github.pluto.boot.rate.limiter.exception.LimitAccessException;
 import com.github.pluto.boot.web.utils.IPUtil;
 import com.google.common.collect.ImmutableList;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -14,7 +15,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
@@ -37,12 +37,8 @@ import java.util.Objects;
 @Component
 public class ApiLimitAspect {
 
-    private final RedisTemplate<String, Serializable> limitRedisTemplate;
-
-    @Autowired
-    public ApiLimitAspect(RedisTemplate<String, Serializable> limitRedisTemplate) {
-        this.limitRedisTemplate = limitRedisTemplate;
-    }
+    @Resource
+    private RedisTemplate<String, Serializable> limitRedisTemplate;
 
     @Pointcut("@annotation(com.github.pluto.boot.rate.limiter.annotation.ApiRateLimit)")
     public void pointcut() {
@@ -72,7 +68,7 @@ public class ApiLimitAspect {
         RedisScript<Number> redisScript = new DefaultRedisScript<>(luaScript, Number.class);
         Number count = limitRedisTemplate.execute(redisScript, keys, limitCount, limitPeriod);
         log.info("IP:{} 第 {} 次访问key为 {}，描述为 [{}] 的接口", ip, count, keys, name);
-        if (count != null && count.intValue() <= limitCount) {
+        if (count.intValue() <= limitCount) {
             return point.proceed();
         } else {
             throw new LimitAccessException("接口访问超出频率限制");
