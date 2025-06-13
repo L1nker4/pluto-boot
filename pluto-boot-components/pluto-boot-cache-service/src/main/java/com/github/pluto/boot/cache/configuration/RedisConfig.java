@@ -40,10 +40,17 @@ public class RedisConfig {
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory factory) {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        return createRedisTemplate(factory, new RedisTemplate<>());
+    }
+
+    @Bean(name = "limitRedisTemplate")
+    public RedisTemplate<String, Serializable> limitRedisTemplate(LettuceConnectionFactory factory) {
+        return createRedisTemplate(factory, new RedisTemplate<>());
+    }
+
+    private <V> RedisTemplate<String, V> createRedisTemplate(LettuceConnectionFactory factory, RedisTemplate<String, V> template) {
         template.setConnectionFactory(factory);
 
-        // 使用 JSON 作为值的序列化方式
         GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer();
         StringRedisSerializer stringSerializer = new StringRedisSerializer();
 
@@ -54,24 +61,6 @@ public class RedisConfig {
 
         template.afterPropertiesSet();
         return template;
-    }
-
-    @Bean(name = "limitRedisTemplate")
-    public RedisTemplate<String, Serializable> limitRedisTemplate(LettuceConnectionFactory factory) {
-        RedisTemplate<String, Serializable> limitRedisTemplate = new RedisTemplate<>();
-        limitRedisTemplate.setConnectionFactory(factory);
-
-        // 使用 JSON 作为值的序列化方式
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer();
-        StringRedisSerializer stringSerializer = new StringRedisSerializer();
-
-        limitRedisTemplate.setKeySerializer(stringSerializer);
-        limitRedisTemplate.setValueSerializer(jsonSerializer);
-        limitRedisTemplate.setHashKeySerializer(stringSerializer);
-        limitRedisTemplate.setHashValueSerializer(jsonSerializer);
-
-        limitRedisTemplate.afterPropertiesSet();
-        return limitRedisTemplate;
     }
 
     @Bean
