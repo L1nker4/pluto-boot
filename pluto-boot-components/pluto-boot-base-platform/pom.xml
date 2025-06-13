@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.pluto</groupId>
         <artifactId>pluto-boot-components</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>pluto-boot-base-platform</artifactId>
