@@ -10,8 +10,10 @@ public interface StorageService {
     /**
      * upload file
      * @param data file data
-     * @param fileName file name
+     * @param fullPath file name
      * @return file url
      */
-    String uploadFile(byte[] data, String fileName) throws UploadException;
+    String uploadFile(byte[] data, String fullPath) throws UploadException;
+
+    byte[] downloadFile(String fullPath) throws UploadException;
 }

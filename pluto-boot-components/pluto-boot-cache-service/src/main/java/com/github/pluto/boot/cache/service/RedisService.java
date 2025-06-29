@@ -139,4 +139,11 @@ public interface RedisService {
      * @return Map
      */
     Map<String, Object> getMemoryInfo() throws RedisConnectException;
+
+    /**
+     * 发送消息
+     * @param key
+     * @param value
+     */
+    void sendMessage(String key, String value);
 }

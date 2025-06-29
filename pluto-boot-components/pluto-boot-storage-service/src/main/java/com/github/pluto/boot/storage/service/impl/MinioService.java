@@ -52,4 +52,28 @@ public class MinioService extends AbstractStorageService {
             throw new UploadException();
         }
     }
+
+    @Override
+    public byte[] downloadFile(String fullPath) throws UploadException {
+        try {
+            boolean found =
+                    minioClient.bucketExists(BucketExistsArgs.builder().bucket(minioProperties.getBucketName()).build());
+
+            if (!found) {
+                throw new UploadException("Bucket does not exist");
+            }
+
+            try (var stream = minioClient.getObject(
+                    io.minio.GetObjectArgs.builder()
+                            .bucket(minioProperties.getBucketName())
+                            .object(fullPath)
+                            .build())) {
+                return stream.readAllBytes();
+            }
+
+        } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
+            log.error("MinioException occurred: {}", e.getMessage());
+            throw new UploadException();
+        }
+    }
 }

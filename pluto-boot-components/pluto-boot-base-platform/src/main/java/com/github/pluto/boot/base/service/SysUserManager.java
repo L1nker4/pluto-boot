@@ -1,5 +1,7 @@
 package com.github.pluto.boot.base.service;
 
+import cn.dev33.satoken.stp.SaTokenInfo;
+import cn.dev33.satoken.stp.StpUtil;
 import com.github.pluto.boot.base.common.router.RouterMeta;
 import com.github.pluto.boot.base.common.router.VueRouter;
 import com.github.pluto.boot.base.entity.Menu;
@@ -8,6 +10,7 @@ import com.github.pluto.boot.base.entity.SysUser;
 import com.github.pluto.boot.base.entity.UserConfig;
 import com.github.pluto.boot.base.utils.ForestUtil;
 import com.github.pluto.boot.base.utils.TreeUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -153,5 +156,19 @@ public class SysUserManager {
             }
             cacheService.deleteUserConfigs(userId);
         }
+    }
+
+    public Long getCurrentUserId() {
+        SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
+        if (tokenInfo == null || StringUtils.isBlank((CharSequence) tokenInfo.getLoginId())) {
+            throw new RuntimeException();
+        }
+
+        SysUser user = getUser((String) tokenInfo.getLoginId());
+
+        if (user == null) {
+            throw new RuntimeException();
+        }
+        return user.getUserId();
     }
 }

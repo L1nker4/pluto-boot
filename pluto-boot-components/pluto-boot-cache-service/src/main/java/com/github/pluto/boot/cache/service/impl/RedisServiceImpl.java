@@ -7,7 +7,9 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisServerCommands;
 import jakarta.annotation.Resource;
 import org.redisson.api.RLock;
+import org.redisson.api.RStream;
 import org.redisson.api.RedissonClient;
+import org.redisson.api.stream.StreamAddArgs;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,8 @@ public class RedisServiceImpl implements RedisService {
 
     @Resource
     private RedissonClient redissonClient;
+
+    private static final String STREAM_JSON_DATA_KET = "data";
 
     @Override
     public Set<String> getKeys(String pattern) {
@@ -189,6 +193,13 @@ public class RedisServiceImpl implements RedisService {
             }
         }
         return map;
+    }
+
+    @Override
+    public void sendMessage(String key, String value) {
+        Map<String, String> dataKet = Map.of(STREAM_JSON_DATA_KET, value);
+        RStream<String, String> stream = redissonClient.getStream(key);
+        stream.add(StreamAddArgs.entries(dataKet));
     }
 
 }

@@ -46,4 +46,9 @@ public class AliOSSService extends AbstractStorageService {
             }
         }
     }
+
+    @Override
+    public byte[] downloadFile(String fullPath) throws UploadException {
+        return new byte[0];
+    }
 }
