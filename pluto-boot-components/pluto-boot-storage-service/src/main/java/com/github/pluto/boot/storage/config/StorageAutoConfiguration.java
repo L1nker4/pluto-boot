@@ -1,4 +1,4 @@
-package com.github.pluto.boot.autoconfigure.storage;
+package com.github.pluto.boot.storage.config;
 
 
 import com.github.pluto.boot.storage.property.MinioProperties;
