@@ -65,8 +65,8 @@ public class ApiLimitAspect {
         };
         ImmutableList<String> keys = ImmutableList.of(StringUtils.join(limitAnnotation.prefix() + "_", key, ip));
         String luaScript = buildLuaScript();
-        RedisScript<Number> redisScript = new DefaultRedisScript<>(luaScript, Number.class);
-        Number count = limitRedisTemplate.execute(redisScript, keys, limitCount, limitPeriod);
+        RedisScript<Long> redisScript = new DefaultRedisScript<>(luaScript, Long.class);
+        Long count = limitRedisTemplate.execute(redisScript, keys, String.valueOf(limitCount), String.valueOf(limitPeriod));
         log.info("IP:{} 第 {} 次访问key为 {}，描述为 [{}] 的接口", ip, count, keys, name);
         if (count.intValue() <= limitCount) {
             return point.proceed();

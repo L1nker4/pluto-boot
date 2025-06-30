@@ -16,7 +16,6 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import java.io.Serializable;
 import java.time.Duration;
 import java.util.Random;
 
@@ -25,55 +24,5 @@ import java.util.Random;
 @EnableConfigurationProperties(RedisProperties.class)
 public class RedisConfig {
 
-    // 从配置文件读取 redis 连接信息
-    @Bean
-    public LettuceConnectionFactory redisConnectionFactory(RedisProperties redisProperties) {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-        config.setHostName(redisProperties.getHost());
-        config.setPort(redisProperties.getPort());
-        config.setDatabase(redisProperties.getDatabase());
-        if (redisProperties.getPassword() != null) {
-            config.setPassword(RedisPassword.of(redisProperties.getPassword()));
-        }
-        return new LettuceConnectionFactory(config);
-    }
 
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory factory) {
-        return createRedisTemplate(factory, new RedisTemplate<>());
-    }
-
-    @Bean(name = "limitRedisTemplate")
-    public RedisTemplate<String, Serializable> limitRedisTemplate(LettuceConnectionFactory factory) {
-        return createRedisTemplate(factory, new RedisTemplate<>());
-    }
-
-    private <V> RedisTemplate<String, V> createRedisTemplate(LettuceConnectionFactory factory, RedisTemplate<String, V> template) {
-        template.setConnectionFactory(factory);
-
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer();
-        StringRedisSerializer stringSerializer = new StringRedisSerializer();
-
-        template.setKeySerializer(stringSerializer);
-        template.setValueSerializer(jsonSerializer);
-        template.setHashKeySerializer(stringSerializer);
-        template.setHashValueSerializer(jsonSerializer);
-
-        template.afterPropertiesSet();
-        return template;
-    }
-
-    @Bean
-    public CacheManager cacheManager(LettuceConnectionFactory factory) {
-        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(30 + new Random().nextInt(30)))// 缓存过期时间,随机时间避免雪崩
-                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
-
-        return RedisCacheManager.builder(factory)
-                .cacheDefaults(config)
-                .allowCreateOnMissingCache(true)
-                .transactionAware()
-                .build();
-    }
 }

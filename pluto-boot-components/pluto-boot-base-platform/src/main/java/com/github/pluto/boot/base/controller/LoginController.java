@@ -11,7 +11,7 @@ import com.github.pluto.boot.base.entity.LoginLog;
 import com.github.pluto.boot.base.entity.SysUser;
 import com.github.pluto.boot.base.entity.UserConfig;
 import com.github.pluto.boot.base.entity.request.LoginUserRequest;
-import com.github.pluto.boot.base.exception.BaseException;
+
 import com.github.pluto.boot.base.mapper.LoginLogMapper;
 import com.github.pluto.boot.base.service.LoginLogService;
 import com.github.pluto.boot.base.service.SysUserManager;
@@ -22,6 +22,7 @@ import com.github.pluto.boot.cache.exception.RedisConnectException;
 import com.github.pluto.boot.cache.service.RedisService;
 import com.github.pluto.boot.rate.limiter.annotation.ApiRateLimit;
 import com.github.pluto.boot.web.entity.CommonResult;
+import com.github.pluto.boot.web.exception.PlutoException;
 import com.wf.captcha.ArithmeticCaptcha;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -64,27 +65,31 @@ public class LoginController {
         String password = MD5Util.encrypt(username, loginUserRequest.getPassword());
         String uuid = loginUserRequest.getUuid();
         String code = loginUserRequest.getCode();
-        //首先校验验证码是否正确
-        String rightCode = redisService.get(uuid);
-        redisService.del(uuid);
-        if (StringUtils.isBlank(rightCode)){
-            throw new BaseException("验证码不存在或已过期");
-        }
-        if (StringUtils.isBlank(code) || !code.equalsIgnoreCase(rightCode)){
-            throw new BaseException("验证码错误");
+
+        //todo 对于MVP产品，暂时提供不需要验证码的登录方式
+        if (StringUtils.isNotBlank(uuid) && StringUtils.isNotBlank(code)) {
+            //首先校验验证码是否正确
+            String rightCode = redisService.get(uuid);
+            redisService.del(uuid);
+            if (StringUtils.isBlank(rightCode)){
+                throw new com.github.pluto.boot.web.exception.PlutoException("验证码不存在或已过期");
+            }
+            if (StringUtils.isBlank(code) || !code.equalsIgnoreCase(rightCode)){
+                throw new PlutoException("验证码错误");
+            }
         }
 
         final String errorMessage = "用户名或密码错误";
         SysUser user = this.userManager.getUser(username);
 
         if (user == null) {
-            throw new BaseException(errorMessage);
+            throw new PlutoException(errorMessage);
         }
         if (!StringUtils.equals(user.getPassword(), password)) {
-            throw new BaseException(errorMessage);
+            throw new PlutoException(errorMessage);
         }
         if (SysUser.STATUS_LOCK.equals(user.getStatus())) {
-            throw new BaseException("账号已被锁定,请联系管理员！");
+            throw new PlutoException("账号已被锁定,请联系管理员！");
         }
 
         // 更新用户登录时间
@@ -167,7 +172,7 @@ public class LoginController {
     public void kickout(@NotBlank(message = "{required}") @PathVariable String id) throws Exception {
         SysUser sysUser = userService.getById(id);
         if (sysUser == null) {
-            throw new BaseException("用户不存在");
+            throw new PlutoException("用户不存在");
         }
         StpUtil.logout(sysUser.getUsername(), BaseSystemConstant.SYS_USER);
     }
