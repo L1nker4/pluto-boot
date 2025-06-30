@@ -23,6 +23,11 @@
             <artifactId>pluto-boot-storage-service</artifactId>
             <version>${revision}</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.pluto</groupId>
+            <artifactId>pluto-boot-autoconfigure</artifactId>
+            <version>${revision}</version>
+        </dependency>
     </dependencies>
 
 </project>
