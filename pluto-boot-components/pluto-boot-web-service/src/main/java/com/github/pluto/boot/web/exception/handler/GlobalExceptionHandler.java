@@ -1,5 +1,6 @@
 package com.github.pluto.boot.web.exception.handler;
 
+import cn.dev33.satoken.exception.NotLoginException;
 import com.github.pluto.boot.web.entity.CommonResult;
 import com.github.pluto.boot.web.exception.PlutoException;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,13 @@ public class GlobalExceptionHandler {
     public CommonResult handleParamsInvalidException(PlutoException e) {
         log.error("系统错误：{}", e.getMessage());
         return new CommonResult().failed(e.getMessage());
+    }
+
+    @ExceptionHandler(value = NotLoginException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public CommonResult<String> handleNotLoginException(NotLoginException e) {
+        log.error("未登录异常：{}", e.getMessage());
+        return new CommonResult<String>().unauthorized(e.getMessage());
     }
 
     /**
