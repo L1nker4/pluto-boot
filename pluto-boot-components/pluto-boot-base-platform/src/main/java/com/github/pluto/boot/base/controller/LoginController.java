@@ -66,17 +66,14 @@ public class LoginController {
         String uuid = loginUserRequest.getUuid();
         String code = loginUserRequest.getCode();
 
-        //todo 对于MVP产品，暂时提供不需要验证码的登录方式
-        if (StringUtils.isNotBlank(uuid) && StringUtils.isNotBlank(code)) {
-            //首先校验验证码是否正确
-            String rightCode = redisService.get(uuid);
-            redisService.del(uuid);
-            if (StringUtils.isBlank(rightCode)){
-                throw new PlutoException("验证码不存在或已过期");
-            }
-            if (StringUtils.isBlank(code) || !code.equalsIgnoreCase(rightCode)){
-                throw new PlutoException("验证码错误");
-            }
+        //首先校验验证码是否正确
+        String rightCode = redisService.get(uuid);
+        redisService.del(uuid);
+        if (StringUtils.isBlank(rightCode)){
+            throw new PlutoException("验证码不存在或已过期");
+        }
+        if (StringUtils.isBlank(code) || !code.equalsIgnoreCase(rightCode)){
+            throw new PlutoException("验证码错误");
         }
 
         final String errorMessage = "用户名或密码错误";
