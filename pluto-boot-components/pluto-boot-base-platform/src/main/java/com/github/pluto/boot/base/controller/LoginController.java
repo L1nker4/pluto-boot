@@ -4,6 +4,8 @@ package com.github.pluto.boot.base.controller;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.captcha.CaptchaUtil;
+import cn.hutool.captcha.LineCaptcha;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pluto.boot.base.common.BaseSystemConstant;
 import com.github.pluto.boot.base.entity.ActiveUser;
@@ -11,7 +13,6 @@ import com.github.pluto.boot.base.entity.LoginLog;
 import com.github.pluto.boot.base.entity.SysUser;
 import com.github.pluto.boot.base.entity.UserConfig;
 import com.github.pluto.boot.base.entity.request.LoginUserRequest;
-
 import com.github.pluto.boot.base.mapper.LoginLogMapper;
 import com.github.pluto.boot.base.service.LoginLogService;
 import com.github.pluto.boot.base.service.SysUserManager;
@@ -23,7 +24,6 @@ import com.github.pluto.boot.cache.service.RedisService;
 import com.github.pluto.boot.rate.limiter.annotation.ApiRateLimit;
 import com.github.pluto.boot.web.entity.CommonResult;
 import com.github.pluto.boot.web.exception.PlutoException;
-import com.wf.captcha.ArithmeticCaptcha;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -109,20 +109,19 @@ public class LoginController {
     @Operation(summary = "获取验证码")
     @GetMapping(value = "/code")
     public ResponseEntity<Object> getCode() throws RedisConnectException {
-        ArithmeticCaptcha captcha = new ArithmeticCaptcha(111, 36);
-        // 几位数运算，默认是两位
-        captcha.setLen(2);
+        LineCaptcha captcha = CaptchaUtil.createLineCaptcha(130, 48, 4, 10);
+
         // 获取运算的结果
-        String result = captcha.text();
+        String result = captcha.getCode();
         String uuid = UUID.randomUUID().toString();
-        String key = BaseSystemConstant.CODE_PREFIX + StringPool.DASH + uuid;
+        String redisKey = BaseSystemConstant.CODE_PREFIX + StringPool.DASH + uuid;
         // 保存
-        redisService.set(key, result, (long) (1000 * 60 * 2));
-        // 验证码信息
-        Map<String, Object> imgResult = new HashMap<>(2) {{
-            put("img", captcha.toBase64());
-            put("uuid", key);
-        }};
+        redisService.set(redisKey, result, (long) (1000 * 60 * 2));
+
+        Map<String, Object> imgResult = Map.of(
+                "img", captcha.getImageBase64(),
+                "uuid", redisKey
+        );
         return ResponseEntity.ok(imgResult);
     }
 
