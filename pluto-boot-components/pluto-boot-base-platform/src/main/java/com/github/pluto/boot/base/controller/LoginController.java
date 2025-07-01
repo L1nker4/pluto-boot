@@ -72,7 +72,7 @@ public class LoginController {
             String rightCode = redisService.get(uuid);
             redisService.del(uuid);
             if (StringUtils.isBlank(rightCode)){
-                throw new com.github.pluto.boot.web.exception.PlutoException("验证码不存在或已过期");
+                throw new PlutoException("验证码不存在或已过期");
             }
             if (StringUtils.isBlank(code) || !code.equalsIgnoreCase(rightCode)){
                 throw new PlutoException("验证码错误");
