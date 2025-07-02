@@ -1,5 +1,7 @@
 package com.github.pluto.boot.cache.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pluto.boot.cache.entity.RedisInfo;
 import com.github.pluto.boot.cache.exception.RedisConnectException;
 import com.github.pluto.boot.cache.service.RedisService;
@@ -7,9 +9,8 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisServerCommands;
 import jakarta.annotation.Resource;
 import org.redisson.api.RLock;
-import org.redisson.api.RStream;
 import org.redisson.api.RedissonClient;
-import org.redisson.api.stream.StreamAddArgs;
+import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
@@ -31,6 +32,9 @@ public class RedisServiceImpl implements RedisService {
 
     @Resource
     private RedissonClient redissonClient;
+
+    @Resource
+    private ObjectMapper objectMapper;
 
     private static final String STREAM_JSON_DATA_KET = "data";
 
@@ -194,10 +198,31 @@ public class RedisServiceImpl implements RedisService {
     }
 
     @Override
-    public void sendMessage(String key, String value) {
-        Map<String, String> dataKet = Map.of(STREAM_JSON_DATA_KET, value);
-        RStream<String, String> stream = redissonClient.getStream(key);
-        stream.add(StreamAddArgs.entries(dataKet));
+    public void sendMessage(String key, Object value) {
+        try {
+            if (value == null) {
+                throw new IllegalArgumentException("Value cannot be null");
+            }
+
+            // 转换为 Map<String, Object>
+            Map<String, Object> rawMap = objectMapper.convertValue(value, new TypeReference<>() {});
+
+            // 过滤 null 值
+            Map<String, String> filteredMap = rawMap.entrySet().stream()
+                    .filter(e -> e.getValue() != null)
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            e -> String.valueOf(e.getValue())
+                    ));
+
+            MapRecord<String, String, String> record = MapRecord.create(key, filteredMap);
+            redisTemplate.opsForStream().add(record);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send the message to Redis Stream", e);
+        }
     }
+
+
 
 }

@@ -145,5 +145,5 @@ public interface RedisService {
      * @param key
      * @param value
      */
-    void sendMessage(String key, String value);
+    void sendMessage(String key, Object value);
 }
