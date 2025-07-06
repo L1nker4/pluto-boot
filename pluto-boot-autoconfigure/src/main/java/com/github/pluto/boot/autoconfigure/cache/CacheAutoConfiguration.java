@@ -56,6 +56,7 @@ public class CacheAutoConfiguration {
         template.setKeySerializer(stringRedisSerializer);
         template.setHashKeySerializer(stringRedisSerializer);
         template.setValueSerializer(stringRedisSerializer);
+        template.setHashValueSerializer(stringRedisSerializer);
 
         template.afterPropertiesSet();
         return template;

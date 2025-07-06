@@ -11,6 +11,8 @@ import jakarta.annotation.Resource;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.connection.stream.MapRecord;
+import org.springframework.data.redis.connection.stream.RecordId;
+import org.springframework.data.redis.connection.stream.StreamRecords;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
@@ -29,6 +31,9 @@ public class RedisServiceImpl implements RedisService {
 
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Resource
+    private RedisTemplate<String, Object> limitRedisTemplate;
 
     @Resource
     private RedissonClient redissonClient;
@@ -215,8 +220,12 @@ public class RedisServiceImpl implements RedisService {
                             e -> String.valueOf(e.getValue())
                     ));
 
-            MapRecord<String, String, String> record = MapRecord.create(key, filteredMap);
-            redisTemplate.opsForStream().add(record);
+            MapRecord<String, String, String> record = StreamRecords.newRecord()
+                    .in(key)
+                    .ofMap(filteredMap)
+                    .withId(RecordId.autoGenerate());
+
+            limitRedisTemplate.opsForStream().add(record);
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to send the message to Redis Stream", e);
