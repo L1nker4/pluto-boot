@@ -46,9 +46,9 @@ public interface RedisService {
      *
      * @param key         key
      * @param value       value
-     * @param milliSeconds 毫秒
+     * @param seconds 秒
      */
-    void set(String key, String value, Long milliSeconds);
+    void set(String key, String value, Long seconds);
 
     void del(String key);
 

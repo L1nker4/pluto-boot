@@ -105,7 +105,7 @@ public class LoginController {
 
     @Operation(summary = "获取验证码")
     @GetMapping(value = "/code")
-    public ResponseEntity<Object> getCode() throws RedisConnectException {
+    public CommonResult<Map<String, Object>> getCode() throws RedisConnectException {
         LineCaptcha captcha = CaptchaUtil.createLineCaptcha(130, 48, 4, 10);
 
         // 获取运算的结果
@@ -113,13 +113,13 @@ public class LoginController {
         String uuid = UUID.randomUUID().toString();
         String redisKey = BaseSystemConstant.CODE_PREFIX + StringPool.DASH + uuid;
         // 保存
-        redisService.set(redisKey, result, (long) (1000 * 60 * 2));
+        redisService.set(redisKey, result, 60 * 5L);
 
         Map<String, Object> imgResult = Map.of(
                 "img", captcha.getImageBase64(),
                 "uuid", redisKey
         );
-        return ResponseEntity.ok(imgResult);
+        return new CommonResult<Map<String, Object>>().data(imgResult);
     }
 
     @GetMapping("index/{username}")
