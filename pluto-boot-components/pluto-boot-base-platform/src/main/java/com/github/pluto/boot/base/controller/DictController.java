@@ -7,6 +7,8 @@ import com.github.pluto.boot.base.entity.Dict;
 import com.github.pluto.boot.base.exception.BaseException;
 import com.github.pluto.boot.base.logging.Log;
 import com.github.pluto.boot.base.service.DictService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -23,12 +25,13 @@ import java.util.Map;
 /**
  * @author     ：L1nker4
  * @date       ： 创建于  2020/1/20 19:13
- * @description： 
+ * @description：
  */
 @Slf4j
 @Validated
 @RestController
-@RequestMapping("dict")
+@Tag(name = "字典管理")
+@RequestMapping("base/dict")
 public class DictController extends BaseController {
 
     private String message;
@@ -36,12 +39,14 @@ public class DictController extends BaseController {
     @Autowired
     private DictService dictService;
 
+    @Operation(summary = "获取字典列表")
     @GetMapping
     @SaCheckPermission("dict:view")
     public Map<String, Object> DictList(QueryRequest request, Dict dict) {
         return getDataTable(this.dictService.findDicts(request, dict));
     }
 
+    @Operation(summary = "新增字典")
     @Log("新增字典")
     @PostMapping
     @SaCheckPermission("dict:add")
@@ -55,6 +60,7 @@ public class DictController extends BaseController {
         }
     }
 
+    @Operation(summary = "删除字典")
     @Log("删除字典")
     @DeleteMapping("/{dictIds}")
     @SaCheckPermission("dict:delete")
@@ -69,6 +75,7 @@ public class DictController extends BaseController {
         }
     }
 
+    @Operation(summary = "修改字典")
     @Log("修改字典")
     @PutMapping
     @SaCheckPermission("dict:update")
@@ -82,6 +89,7 @@ public class DictController extends BaseController {
         }
     }
 
+    @Operation(summary = "导出字典Excel")
     @PostMapping("excel")
     @SaCheckPermission("dict:export")
     public void export(QueryRequest request, Dict dict, HttpServletResponse response) throws BaseException {

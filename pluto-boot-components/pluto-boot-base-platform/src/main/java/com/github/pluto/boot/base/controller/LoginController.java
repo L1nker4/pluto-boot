@@ -31,7 +31,6 @@ import jakarta.validation.constraints.NotBlank;
 import jodd.util.StringPool;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +40,7 @@ import java.util.*;
 @Validated
 @RestController
 @Tag(name = "系统登录模块")
+@RequestMapping("base/auth")
 public class LoginController {
 
     @Autowired
@@ -57,6 +57,7 @@ public class LoginController {
     @Autowired
     private ObjectMapper mapper;
 
+    @Operation(summary = "登录")
     @PostMapping("/login")
     @ApiRateLimit(key = "login", period = 60, count = 10, name = "登录接口", prefix = "limit")
     public CommonResult<Map<String, Object>> login(@RequestBody LoginUserRequest loginUserRequest,
@@ -122,6 +123,7 @@ public class LoginController {
         return new CommonResult<Map<String, Object>>().data(imgResult);
     }
 
+    @Operation(summary = "获取首页数据")
     @GetMapping("index/{username}")
     public CommonResult<Map<String, Object>> index(@NotBlank(message = "{required}") @PathVariable String username) {
         Map<String, Object> data = new HashMap<>();
@@ -142,6 +144,7 @@ public class LoginController {
         return new CommonResult<Map<String, Object>>().data(data);
     }
 
+    @Operation(summary = "在线用户")
     @SaCheckPermission("user:online")
     @GetMapping("online")
     public CommonResult<List<ActiveUser>> userOnline(String username) throws Exception {
@@ -163,6 +166,7 @@ public class LoginController {
         return new CommonResult<List<ActiveUser>>().data(activeUsers);
     }
 
+    @Operation(summary = "T出用户")
     @DeleteMapping("kickout/{id}")
     @SaCheckPermission("user:kickout")
     public void kickout(@NotBlank(message = "{required}") @PathVariable String id) throws Exception {
@@ -173,11 +177,13 @@ public class LoginController {
         StpUtil.logout(sysUser.getUsername(), BaseSystemConstant.SYS_USER);
     }
 
+    @Operation(summary = "登出")
     @GetMapping("logout/{id}")
     public void logout(@NotBlank(message = "{required}") @PathVariable String id) throws Exception {
         this.kickout(id);
     }
 
+    @Operation(summary = "注册")
     @PostMapping("regist")
     public void register(
             @NotBlank(message = "{required}") String username,

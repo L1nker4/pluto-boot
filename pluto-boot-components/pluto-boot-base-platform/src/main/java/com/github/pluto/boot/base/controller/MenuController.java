@@ -8,6 +8,8 @@ import com.github.pluto.boot.base.exception.BaseException;
 import com.github.pluto.boot.base.logging.Log;
 import com.github.pluto.boot.base.service.MenuService;
 import com.github.pluto.boot.base.service.SysUserManager;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -24,7 +26,8 @@ import java.util.Map;
 @Slf4j
 @Validated
 @RestController
-@RequestMapping("/menu")
+@Tag(name = "菜单管理")
+@RequestMapping("base/menu")
 public class MenuController extends BaseController {
 
     private String message;
@@ -34,17 +37,20 @@ public class MenuController extends BaseController {
     @Autowired
     private MenuService menuService;
 
+    @Operation(summary = "获取用户路由")
     @GetMapping("/{username}")
     public ArrayList<VueRouter<Menu>> getUserRouters(@NotBlank(message = "{required}") @PathVariable String username) {
         return this.userManager.getUserRouters(username);
     }
 
+    @Operation(summary = "获取菜单列表")
     @GetMapping
     @SaCheckPermission("menu:view")
     public Map<String, Object> menuList(Menu menu) {
         return this.menuService.findMenus(menu);
     }
 
+    @Operation(summary = "新增菜单/按钮")
     @Log("新增菜单/按钮")
     @PostMapping
     @SaCheckPermission("menu:add")
@@ -58,6 +64,7 @@ public class MenuController extends BaseController {
         }
     }
 
+    @Operation(summary = "删除菜单/按钮")
     @Log("删除菜单/按钮")
     @DeleteMapping("/{menuIds}")
     @SaCheckPermission("menu:delete")
@@ -72,6 +79,7 @@ public class MenuController extends BaseController {
         }
     }
 
+    @Operation(summary = "修改菜单/按钮")
     @Log("修改菜单/按钮")
     @PutMapping
     @SaCheckPermission("menu:update")
@@ -85,6 +93,7 @@ public class MenuController extends BaseController {
         }
     }
 
+    @Operation(summary = "导出菜单Excel")
     @PostMapping("excel")
     @SaCheckPermission("menu:export")
     public void export(Menu menu, HttpServletResponse response) throws BaseException {

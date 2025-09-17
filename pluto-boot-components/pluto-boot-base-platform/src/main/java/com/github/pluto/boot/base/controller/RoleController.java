@@ -9,6 +9,8 @@ import com.github.pluto.boot.base.exception.BaseException;
 import com.github.pluto.boot.base.logging.Log;
 import com.github.pluto.boot.base.service.RoleMenuServie;
 import com.github.pluto.boot.base.service.RoleService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -25,7 +27,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Validated
 @RestController
-@RequestMapping("role")
+@Tag(name = "角色管理")
+@RequestMapping("base/role")
 public class RoleController extends BaseController {
 
     @Autowired
@@ -35,24 +38,28 @@ public class RoleController extends BaseController {
 
     private String message;
 
+    @Operation(summary = "获取角色列表")
     @GetMapping
     @SaCheckPermission("role:view")
     public Map<String, Object> roleList(QueryRequest queryRequest, Role role) {
         return getDataTable(roleService.findRoles(role, queryRequest));
     }
 
+    @Operation(summary = "检查角色名是否存在")
     @GetMapping("check/{roleName}")
     public boolean checkRoleName(@NotBlank(message = "{required}") @PathVariable String roleName) {
         Role result = this.roleService.findByName(roleName);
         return result == null;
     }
 
+    @Operation(summary = "获取角色菜单")
     @GetMapping("menu/{roleId}")
     public List<String> getRoleMenus(@NotBlank(message = "{required}") @PathVariable String roleId) {
         List<RoleMenu> list = this.roleMenuServie.getRoleMenusByRoleId(roleId);
         return list.stream().map(roleMenu -> String.valueOf(roleMenu.getMenuId())).collect(Collectors.toList());
     }
 
+    @Operation(summary = "新增角色")
     @Log("新增角色")
     @PostMapping
     @SaCheckPermission("role:add")
@@ -66,6 +73,7 @@ public class RoleController extends BaseController {
         }
     }
 
+    @Operation(summary = "删除角色")
     @Log("删除角色")
     @DeleteMapping("/{roleIds}")
     @SaCheckPermission("role:delete")
@@ -80,6 +88,7 @@ public class RoleController extends BaseController {
         }
     }
 
+    @Operation(summary = "修改角色")
     @Log("修改角色")
     @PutMapping
     @SaCheckPermission("role:update")
@@ -93,6 +102,7 @@ public class RoleController extends BaseController {
         }
     }
 
+    @Operation(summary = "导出角色Excel")
     @PostMapping("excel")
     @SaCheckPermission("role:export")
     public void export(QueryRequest queryRequest, Role role, HttpServletResponse response) throws BaseException {

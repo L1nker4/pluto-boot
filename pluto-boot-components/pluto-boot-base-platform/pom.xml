@@ -65,6 +65,12 @@
             <artifactId>hutool-captcha</artifactId>
             <version>5.8.38</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

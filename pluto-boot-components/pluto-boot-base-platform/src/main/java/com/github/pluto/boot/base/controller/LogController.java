@@ -7,6 +7,8 @@ import com.github.pluto.boot.base.entity.SysLog;
 import com.github.pluto.boot.base.exception.BaseException;
 import com.github.pluto.boot.base.logging.Log;
 import com.github.pluto.boot.base.service.SysLogService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotBlank;
 import jodd.util.StringPool;
@@ -21,7 +23,8 @@ import java.util.Map;
 @Slf4j
 @Validated
 @RestController
-@RequestMapping("log")
+@Tag(name = "日志管理")
+@RequestMapping("base/log")
 public class LogController extends BaseController {
 
     private String message;
@@ -29,12 +32,14 @@ public class LogController extends BaseController {
     @Autowired
     private SysLogService logService;
 
+    @Operation(summary = "获取日志列表")
     @GetMapping
     @SaCheckPermission("log:view")
     public Map<String, Object> logList(QueryRequest request, SysLog sysLog) {
         return getDataTable(logService.findLogs(request, sysLog));
     }
 
+    @Operation(summary = "删除系统日志")
     @Log("删除系统日志")
     @DeleteMapping("/{ids}")
     @SaCheckPermission("log:delete")
@@ -49,6 +54,7 @@ public class LogController extends BaseController {
         }
     }
 
+    @Operation(summary = "导出日志Excel")
     @PostMapping("excel")
     @SaCheckPermission("log:export")
     public void export(QueryRequest request, SysLog sysLog, HttpServletResponse response) throws BaseException {

@@ -13,6 +13,8 @@ import com.github.pluto.boot.base.service.RoleService;
 import com.github.pluto.boot.base.service.SysUserService;
 import com.github.pluto.boot.base.service.UserConfigService;
 import com.github.pluto.boot.base.utils.MD5Util;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -29,7 +31,8 @@ import java.util.Map;
 @Slf4j
 @Validated
 @RestController
-@RequestMapping("user")
+@Tag(name = "用户管理")
+@RequestMapping("base/user")
 public class UserController extends BaseController {
 
     private String message;
@@ -41,11 +44,13 @@ public class UserController extends BaseController {
     @Autowired
     private RoleService roleService;
 
+    @Operation(summary = "检查用户名是否存在")
     @GetMapping("check/{username}")
     public boolean checkUserName(@NotBlank(message = "{required}") @PathVariable String username) {
         return this.userService.findByName(username) == null;
     }
 
+    @Operation(summary = "获取用户详情")
     @GetMapping("/{username}")
     public SysUser detail(@NotBlank(message = "{required}") @PathVariable String username) {
         SysUser user = this.userService.findByName(username);
@@ -60,12 +65,14 @@ public class UserController extends BaseController {
         return user;
     }
 
+    @Operation(summary = "获取用户列表")
     @GetMapping
     @SaCheckPermission("user:view")
     public Map<String, Object> userList(QueryRequest queryRequest, SysUser user) {
         return getDataTable(userService.findUserDetail(user, queryRequest));
     }
 
+    @Operation(summary = "新增用户")
     @Log("新增用户")
     @PostMapping
     @SaCheckPermission("user:add")
@@ -79,6 +86,7 @@ public class UserController extends BaseController {
         }
     }
 
+    @Operation(summary = "修改用户")
     @Log("修改用户")
     @PutMapping
     @SaCheckPermission("user:update")
@@ -92,6 +100,7 @@ public class UserController extends BaseController {
         }
     }
 
+    @Operation(summary = "删除用户")
     @Log("删除用户")
     @DeleteMapping("/{userIds}")
     @SaCheckPermission("user:delete")
@@ -106,6 +115,7 @@ public class UserController extends BaseController {
         }
     }
 
+    @Operation(summary = "更新用户个人信息")
     @PutMapping("profile")
     public void updateProfile(@RequestBody @Valid SysUser user) throws BaseException {
         try {
@@ -117,6 +127,7 @@ public class UserController extends BaseController {
         }
     }
 
+    @Operation(summary = "更新用户头像")
     @PutMapping("avatar")
     public void updateAvatar(@RequestBody @Valid UpdateAvatorRequest request) throws BaseException {
         try {
@@ -128,6 +139,7 @@ public class UserController extends BaseController {
         }
     }
 
+    @Operation(summary = "更新用户配置")
     @PutMapping("userconfig")
     public void updateUserConfig(@Valid UserConfig userConfig) throws BaseException {
         try {
@@ -139,6 +151,7 @@ public class UserController extends BaseController {
         }
     }
 
+    @Operation(summary = "检查密码")
     @GetMapping("password/check")
     public boolean checkPassword(
             @NotBlank(message = "{required}") String username,
@@ -152,6 +165,7 @@ public class UserController extends BaseController {
         }
     }
 
+    @Operation(summary = "更新密码")
     @PutMapping("password")
     public void updatePassword(
             @NotBlank(message = "{required}") String username,
@@ -165,6 +179,7 @@ public class UserController extends BaseController {
         }
     }
 
+    @Operation(summary = "重置密码")
     @PutMapping("password/reset")
     @SaCheckPermission("user:reset")
     public void resetPassword(@NotBlank(message = "{required}") String usernames) throws BaseException {
@@ -178,6 +193,7 @@ public class UserController extends BaseController {
         }
     }
 
+    @Operation(summary = "导出用户Excel")
     @PostMapping("excel")
     @SaCheckPermission("user:export")
     public void export(QueryRequest queryRequest, SysUser user, HttpServletResponse response) throws BaseException {

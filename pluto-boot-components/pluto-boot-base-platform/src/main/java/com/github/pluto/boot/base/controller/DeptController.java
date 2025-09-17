@@ -7,6 +7,8 @@ import com.github.pluto.boot.base.entity.Dept;
 import com.github.pluto.boot.base.exception.BaseException;
 import com.github.pluto.boot.base.logging.Log;
 import com.github.pluto.boot.base.service.DeptService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -22,7 +24,8 @@ import java.util.Map;
 @Slf4j
 @Validated
 @RestController
-@RequestMapping("dept")
+@Tag(name = "部门管理")
+@RequestMapping("base/dept")
 public class DeptController extends BaseController {
 
     private String message;
@@ -30,11 +33,13 @@ public class DeptController extends BaseController {
     @Autowired
     private DeptService deptService;
 
+    @Operation(summary = "获取部门列表")
     @GetMapping
     public Map<String, Object> deptList(QueryRequest request, Dept dept) {
         return this.deptService.findDepts(request, dept);
     }
 
+    @Operation(summary = "新增部门")
     @Log("新增部门")
     @PostMapping
     @SaCheckPermission("dept:add")
@@ -48,6 +53,7 @@ public class DeptController extends BaseController {
         }
     }
 
+    @Operation(summary = "删除部门")
     @Log("删除部门")
     @DeleteMapping("/{deptIds}")
     @SaCheckPermission("dept:delete")
@@ -62,6 +68,7 @@ public class DeptController extends BaseController {
         }
     }
 
+    @Operation(summary = "修改部门")
     @Log("修改部门")
     @PutMapping
     @SaCheckPermission("dept:update")
@@ -75,6 +82,7 @@ public class DeptController extends BaseController {
         }
     }
 
+    @Operation(summary = "导出部门Excel")
     @PostMapping("excel")
     @SaCheckPermission("dept:export")
     public void export(Dept dept, QueryRequest request, HttpServletResponse response) throws BaseException {

@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pluto.boot.cache.entity.RedisInfo;
 import com.github.pluto.boot.cache.exception.RedisConnectException;
 import com.github.pluto.boot.cache.service.RedisService;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisServerCommands;
 import jakarta.annotation.Resource;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -132,10 +130,12 @@ public class RedisServiceImpl implements RedisService {
     @Override
     public List<RedisInfo> getRedisInfo() throws RedisConnectException {
         String info = redisTemplate.execute((RedisCallback<String>) connection -> {
-            StatefulRedisConnection<?, ?> nativeConnection =
-                    (StatefulRedisConnection<?, ?>) connection.getNativeConnection();
-            RedisServerCommands<?, ?> sync = nativeConnection.sync();
-            return sync.info();
+            Properties infoProps = connection.info();
+            StringBuilder sb = new StringBuilder();
+            for (Object key : infoProps.keySet()) {
+                sb.append(key).append(":").append(infoProps.get(key)).append(System.lineSeparator());
+            }
+            return sb.toString();
         });
         return getRedisInfoList(info);
     }
@@ -160,12 +160,7 @@ public class RedisServiceImpl implements RedisService {
 
     @Override
     public Map<String, Object> getKeysSize() throws RedisConnectException {
-        Long dbSize = redisTemplate.execute((RedisCallback<Long>) connection -> {
-            StatefulRedisConnection<?, ?> nativeConnection =
-                    (StatefulRedisConnection<?, ?>) connection.getNativeConnection();
-            RedisServerCommands<?, ?> sync = nativeConnection.sync();
-            return sync.dbsize();
-        });
+        Long dbSize = redissonClient.getKeys().count();
 
         Map<String, Object> map = new HashMap<>();
         map.put("create_time", System.currentTimeMillis());
@@ -176,29 +171,17 @@ public class RedisServiceImpl implements RedisService {
     @Override
     public Map<String, Object> getMemoryInfo() throws RedisConnectException {
         String info = redisTemplate.execute((RedisCallback<String>) connection -> {
-            StatefulRedisConnection<?, ?> nativeConnection =
-                    (StatefulRedisConnection<?, ?>) connection.getNativeConnection();
-            RedisServerCommands sync = nativeConnection.sync();
-            return sync.info("memory"); // 只请求 memory 部分，更高效
+            Properties props = connection.info("memory");
+            return props.getProperty("used_memory");
         });
 
         if (info == null) {
             throw new RedisConnectException("无法获取 Redis info 信息");
         }
 
-        String[] lines = info.split(separator);
-        Map<String, Object> map = null;
-        for (String line : lines) {
-            if (line.startsWith("used_memory:")) {
-                String[] detail = line.split(":");
-                if (detail.length == 2) {
-                    map = new HashMap<>();
-                    map.put("used_memory", detail[1].trim()); // 不再截断最后一位，直接 trim
-                    map.put("create_time", System.currentTimeMillis());
-                }
-                break;
-            }
-        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("used_memory", info.trim());
+        map.put("create_time", System.currentTimeMillis());
         return map;
     }
 
